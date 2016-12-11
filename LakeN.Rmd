@@ -16,10 +16,16 @@ knitr::opts_chunk$set(echo = TRUE)
 This model was written as a project for course 68806 Eco-hydrologic modelling with R
 This model illustrates the annual N cycle in a lake in northern Israel, and simulates the transitions from oxydized species into reduced species
 
-```{r }
+# read the data and load relevant libraries
+```{r Code Block 1, eval=TRUE, echo=FALSE}
 # setwd("C:/Users/user/Documents/LakeN")
+# load relevant libraries
 library(plyr)
 library(LakeN)
+library(zoo)
+library(devtools)
+library(roxygen2)
+library(dplyr)
 
 # read the data for the model
 # use the read.table function in the cas of a tab=delimited text file
@@ -33,45 +39,45 @@ data4=read.table("LakeNData4.txt", header=TRUE)
 data1.split=split(data1, f=data1$Date)
 
 ```
+```{r Code Block 2, eval=TRUE, echo=FALSE}
+# setwd("C:/Users/user/Documents/LakeN")
+# load relevant libraries
+summary(data1)
+
+```
 
 # use the function depthinterp to interpolate the data into uniform length for every m
-```{r , echo=FALSE}
-data1.split.interp=vector(mode="list", length=length(data1.split))
+```{r Code Block 3, eval=TRUE, echo=FALSE}
+library(LakeN)
 
 for (ii in 1:length(data1.split)){
   data1.split.interp[[ii]]=depthinterp(input=data1.split[[ii]])
+  data1interp=data1.split.interp[[ii]]
 }
 ```
 
-# demonstrate some interpolations
-```{r , echo=FALSE}
-plot(data1.split[[1]]$Oxygen,data1.split[[1]]$Depth,  
-     main="data interpolation demonstration",ylab="Depth [m]", xlab="Oxygen [mol/l]",
-     ylim=rev(range(data1.split.interp[[1]]$Depth)), xlim=c(0, max(data1.split[[1]]$Oxygen)))
-lines(data1.split.interp[[1]]$Oxygen,data1.split.interp[[1]]$Depth,  col=2)
+# demonstrate some interpolations of random data
+```{r Code Block 4, eval=TRUE, echo=FALSE}
+rand.num=sample(1:length(data1.split),1)
+plot(data1.split[[rand.num]]$Oxygen,data1.split[[rand.num]]$Depth,  
+     main="Oxygen interpolation",ylab="Depth [m]", xlab="Oxygen [mol/l]",
+     ylim=rev(range(data1.split.interp[[rand.num]]$Depth)), xlim=c(0, max(data1.split[[rand.num]]$Oxygen)))
+lines(data1.split.interp[[rand.num]]$Oxygen,data1.split.interp[[rand.num]]$Depth,  col=2)
 
 legend(0, 1, c("Measured", "Interpolation"), col = c(1, 2),
       lty = c(NA,1), pch = c(1, NA),
        merge = TRUE, bg = "gray90")
 
-plot(data1.split[[1]]$Nitrate,data1.split[[1]]$Depth,  
-     main="data interpolation demonstration",ylab="Depth [m]", xlab="Nitrate/NH4 [mol/l]",
-     ylim=rev(range(data1.split.interp[[1]]$Depth)), xlim=c(0,max(c(max(data1.split[[1]]$Nitrate),max(data1.split[[1]]$NH4)))), col=1)
-lines(data1.split.interp[[1]]$Nitrate,data1.split.interp[[1]]$Depth,  col=2)
-points(data1.split[[1]]$NH4,data1.split[[1]]$Depth, col=3)
-lines(data1.split.interp[[1]]$NH4,data1.split.interp[[1]]$Depth,  col=4)
+plot(data1.split[[rand.num]]$Nitrate,data1.split[[rand.num]]$Depth,  
+     main="N species interpolation",ylab="Depth [m]", xlab="Nitrate/NH4 [mol/l]",
+     ylim=rev(range(data1.split.interp[[rand.num]]$Depth)), xlim=c(0,max(c(max(data1.split[[rand.num]]$Nitrate),max(data1.split[[rand.num]]$NH4)))), col=1)
+lines(data1.split.interp[[rand.num]]$Nitrate,data1.split.interp[[rand.num]]$Depth,  col=2)
+points(data1.split[[rand.num]]$NH4,data1.split[[rand.num]]$Depth, col=3)
+lines(data1.split.interp[[rand.num]]$NH4,data1.split.interp[[rand.num]]$Depth,  col=4)
 
-legend(0.3, 1, c("Measured NO2", "Interpolation","Measured NH4", "Interpolation"), col = c(1, 2,3,4),
+legend(0.7*max(c(max(data1.split[[rand.num]]$Nitrate),max(data1.split[[rand.num]]$NH4))), 1, c("Measured NO2", "Interpolation","Measured NH4", "Interpolation"), col = c(1, 2,3,4),
       lty = c(NA,1,NA,1), pch = c(1,NA,1,NA),
        merge = TRUE, bg = "gray90")
 
 ```
 
-## title
-
-text
-
-```{r ,echo=FALSE}
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
