@@ -10,12 +10,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```
 
-## title
+## Lake N model
+# Yoav Ben Dor
 
-this model illustrates the annual N cycle in a lake in northern Israel
+This model was written as a project for course 68806 Eco-hydrologic modelling with R
+This model illustrates the annual N cycle in a lake in northern Israel, and simulates the transitions from oxydized species into reduced species
 
 ```{r }
 # setwd("C:/Users/user/Documents/LakeN")
+library(plyr)
 
 # read the data for the model
 # use the read.table function in the cas of a tab=delimited text file
@@ -25,9 +28,19 @@ data2=read.table("LakeNData2.txt", header=TRUE)
 data3=read.table("LakeNData3.txt", header=TRUE)
 data4=read.table("LakeNData4.txt", header=TRUE)
 
-#create an array for interpolating the data into one meter segments
-newdata=list(dim=c(35,7,156), dimnames=list(c(seq(from=1, to=35, by=1)),c(colnames(data1[,4:10])), c(seq())))
+#split the data set by measurment date
+data1.split=split(data1, f=data1$Date)
 
+
+```
+
+# use the function depthinterp to interpolate the data into uniform length for every m
+```{r , echo=FALSE}
+data1.split.interp=vector(mode="list", length=length(data1.split))
+
+for (ii in 1:length(data1.split)){
+  data1.split.interp[[ii]]=depthinterp(input=data1.split[[ii]])
+}
 
 ```
 
