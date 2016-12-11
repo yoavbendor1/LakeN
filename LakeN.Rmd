@@ -65,7 +65,7 @@ plot(data1.split[[rand.num]]$Oxygen,data1.split[[rand.num]]$Depth,
 lines(data1.split.interp[[rand.num]]$Oxygen,data1.split.interp[[rand.num]]$Depth,  col=2)
 
 legend(0, 1, c("Measured", "Interpolation"), col = c(1, 2),
-      lty = c(NA,1), pch = c(1, NA),
+       lty = c(NA,1), pch = c(1, NA),
        merge = TRUE, bg = "gray90")
 
 plot(data1.split[[rand.num]]$Nitrate,data1.split[[rand.num]]$Depth,  
@@ -76,7 +76,7 @@ points(data1.split[[rand.num]]$NH4,data1.split[[rand.num]]$Depth, col=3)
 lines(data1.split.interp[[rand.num]]$NH4,data1.split.interp[[rand.num]]$Depth,  col=4)
 
 legend(0.7*max(c(max(data1.split[[rand.num]]$Nitrate),max(data1.split[[rand.num]]$NH4))), 1, c("Measured NO2", "Interpolation","Measured NH4", "Interpolation"), col = c(1, 2,3,4),
-      lty = c(NA,1,NA,1), pch = c(1,NA,1,NA),
+       lty = c(NA,1,NA,1), pch = c(1,NA,1,NA),
        merge = TRUE, bg = "gray90")
 
 ```
