@@ -31,7 +31,6 @@ data4=read.table("LakeNData4.txt", header=TRUE)
 #split the data set by measurment date
 data1.split=split(data1, f=data1$Date)
 
-
 ```
 
 # use the function depthinterp to interpolate the data into uniform length for every m
@@ -41,7 +40,11 @@ data1.split.interp=vector(mode="list", length=length(data1.split))
 for (ii in 1:length(data1.split)){
   data1.split.interp[[ii]]=depthinterp(input=data1.split[[ii]])
 }
+```
 
+```{r , echo=FALSE}
+plot(data1.split[[1]]$Depth, data1.split[[1]]$Oxygen, xlab="Depth [m]", ylab="Oxygen [mol/l]")
+lines(data1.split.interp[[1]]$Depth, data1.split.interp[[1]]$Oxygen, col=2)
 ```
 
 ## title

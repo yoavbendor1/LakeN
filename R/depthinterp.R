@@ -43,9 +43,8 @@ depthinterp <-
 
     # replace NA with last available values
     df=na.locf(df)
-    depth=interp.depth
-    df2=cbind(depth,df)
+    Depth=interp.depth
+    df2=data.frame(Depth,df)
 
-    depthinterp=list(df2)
-    return(depthinterp)
+    return(df2)
   }
