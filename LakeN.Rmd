@@ -19,6 +19,7 @@ This model illustrates the annual N cycle in a lake in northern Israel, and simu
 ```{r }
 # setwd("C:/Users/user/Documents/LakeN")
 library(plyr)
+library(LakeN)
 
 # read the data for the model
 # use the read.table function in the cas of a tab=delimited text file
