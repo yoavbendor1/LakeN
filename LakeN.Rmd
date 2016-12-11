@@ -42,9 +42,28 @@ for (ii in 1:length(data1.split)){
 }
 ```
 
+# demonstrate some interpolations
 ```{r , echo=FALSE}
-plot(data1.split[[1]]$Depth, data1.split[[1]]$Oxygen, xlab="Depth [m]", ylab="Oxygen [mol/l]")
-lines(data1.split.interp[[1]]$Depth, data1.split.interp[[1]]$Oxygen, col=2)
+plot(data1.split[[1]]$Oxygen,data1.split[[1]]$Depth,  
+     main="data interpolation demonstration",ylab="Depth [m]", xlab="Oxygen [mol/l]",
+     ylim=rev(range(data1.split.interp[[1]]$Depth)), xlim=c(0, max(data1.split[[1]]$Oxygen)))
+lines(data1.split.interp[[1]]$Oxygen,data1.split.interp[[1]]$Depth,  col=2)
+
+legend(0, 1, c("Measured", "Interpolation"), col = c(1, 2),
+      lty = c(NA,1), pch = c(1, NA),
+       merge = TRUE, bg = "gray90")
+
+plot(data1.split[[1]]$Nitrate,data1.split[[1]]$Depth,  
+     main="data interpolation demonstration",ylab="Depth [m]", xlab="Nitrate/NH4 [mol/l]",
+     ylim=rev(range(data1.split.interp[[1]]$Depth)), xlim=c(0,max(c(max(data1.split[[1]]$Nitrate),max(data1.split[[1]]$NH4)))), col=1)
+lines(data1.split.interp[[1]]$Nitrate,data1.split.interp[[1]]$Depth,  col=2)
+points(data1.split[[1]]$NH4,data1.split[[1]]$Depth, col=3)
+lines(data1.split.interp[[1]]$NH4,data1.split.interp[[1]]$Depth,  col=4)
+
+legend(0.3, 1, c("Measured NO2", "Interpolation","Measured NH4", "Interpolation"), col = c(1, 2,3,4),
+      lty = c(NA,1,NA,1), pch = c(1,NA,1,NA),
+       merge = TRUE, bg = "gray90")
+
 ```
 
 ## title
