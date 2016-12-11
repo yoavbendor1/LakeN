@@ -1,7 +1,7 @@
 ---
 title: "LakeN"
-author: "YBD"
-date: "6 בדצמבר 2016"
+author: "Yoav Ben Dor"
+date: "6.12.2016"
 output: html_document
 ---
 
@@ -18,13 +18,15 @@ this model illustrates the annual N cycle in a lake in northern Israel
 # setwd("C:/Users/user/Documents/LakeN")
 
 # read the data for the model
-Kin=read.table("data for yoav.txt", header=TRUE)
-hypso=read.table("data for yoav2.txt", header=TRUE)
-miflas=read.table("data for yoav3.txt", header=TRUE)
-Temp=read.table("data for yoav4.txt", header=TRUE)
+# use the read.table function in the cas of a tab=delimited text file
+# use the read.csv function for a , delimited text file
+data1=read.table("LakeNData1.txt", header=TRUE)
+data2=read.table("LakeNData2.txt", header=TRUE)
+data3=read.table("LakeNData3.txt", header=TRUE)
+data4=read.table("LakeNData4.txt", header=TRUE)
 
-#create an array for interpolating the data
-newdata=list(dim=c(35,7,156), dimnames=list(c(seq(from=1, to=35, by=1)),c(colnames(Kin[4:10])), c(seq())))
+#create an array for interpolating the data into one meter segments
+newdata=list(dim=c(35,7,156), dimnames=list(c(seq(from=1, to=35, by=1)),c(colnames(data1[,4:10])), c(seq())))
 
 
 ```
