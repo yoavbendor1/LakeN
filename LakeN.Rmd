@@ -51,7 +51,8 @@ summary(data1)
 library(LakeN)
 
 for (ii in 1:length(data1.split)){
-  data1.split.interp[[ii]]=depthinterp(input=data1.split[[ii]])
+  input=data1.split[[ii]]
+  data1.split.interp[[ii]]=depthinterp(input=input)
   data1interp=data1.split.interp[[ii]]
 }
 ```

@@ -8,14 +8,14 @@
 #' @param     intreval    (m) the depth difference between each of the interpolation points, default is 1 m
 #' @param     first.data.col    (-) the first column of data for interpolation
 #' @param     col.num    (-) number of columns in the original data table
-#' @param     input    (-) input data as list
+#' @param     input    (-) input data as dataframe
 #' @param     depth.col (-) the column that contains the depths of measurments
 #'
 #' @author Yoav BD
-#' @return interpolated data for the  (arbitrary units)
+#' @return interpolated data for the lake according to the provided maximum depth
 
 depthinterp <-
-  function(maxdepth=40,intreval=1, first.data.col=3,input,col.num=as.integer(ncol(i[[1]])), depth.col=2 ){
+  function(maxdepth=40,intreval=1, first.data.col=3,input,col.num=ncol(input), depth.col=2 ){
 
     #initialize internal variables
     interp.depth=seq(from=1, to=maxdepth, by=1)
