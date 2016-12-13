@@ -21,10 +21,7 @@ This model illustrates the annual N cycle in a lake in northern Israel, and simu
 # setwd("C:/Users/user/Documents/LakeN")
 # load relevant libraries
 library(plyr)
-library(LakeN)
 library(zoo)
-library(devtools)
-library(roxygen2)
 library(dplyr)
 
 # read the data for the model
@@ -45,88 +42,151 @@ data1.split=split(data1, f=data1$Date)
 ```{r eval=TRUE, echo=FALSE}
 library(LakeN)
 
+#define matrix size requiered for interpolating the data
 n.col.interp=7
 n.row.interp=40
 
+#extract unique date values of measurments to be used for real level correction
+dates=as.Date(unique(data1$Date, incomparables = FALSE))
+
 # initialize an empty data frame for interpolation results
-data1.split.interp=list(matrix(data = NA, ncol=n.col.interp, nrow=n.row.interp))
+data1.split.interp=vector("list", length(data1.split))
+
+#data1.split.interp=list(matrix(data = NA, ncol=n.col.interp, nrow=n.row.interp))
 
 for (ii in 1:length(data1.split)){
-  data1.split.interp[[ii]]=depthinterp(input=data1.split[[ii]])
-  
+  temp=depthinterp(input=data1.split[[ii]])
+  temp.name=as.character.Date(dates[ii])
+  data1.split.interp[[temp.name]]=data.frame(temp)
 }
+#remove any empty elemts of the list
+data1.split.interp[which(names(data1.split.interp) %in% c(""))]=NULL
 ```
+
 
 # demonstrate some interpolations of random data
 ```{r eval=TRUE, echo=FALSE}
 # choose a random number to demonstrate the interpolation
 rand.num=sample(1:length(data1.split),1)
+rand.date=as.character.Date(dates[rand.num])
 
-plot(data1.split[[rand.num]]$Oxygen,data1.split[[rand.num]]$Depth,  
-     main="Oxygen interpolation",ylab="Depth [m]", xlab="Oxygen [mol/l]",
+plot(data1.split[[rand.date]]$Oxygen,data1.split[[rand.date]]$Depth,  
+     main=paste("Oxygen interpolation", rand.date),ylab="Depth [m]", xlab="Oxygen [mol/l]",
      ylim=rev(range(data1.split.interp[[rand.num]]$Depth)), xlim=c(0, max(data1.split[[rand.num]]$Oxygen)))
-lines(data1.split.interp[[rand.num]]$Oxygen,data1.split.interp[[rand.num]]$Depth,  col=2)
+lines(data1.split.interp[[rand.date]]$Oxygen,data1.split.interp[[rand.date]]$Depth,  col=2)
 
+#place a legend for an oxygen plot
 legend(0, 1, c("Measured", "Interpolation"), col = c(1, 2),
        lty = c(NA,1), pch = c(1, NA),
        merge = TRUE, bg = "gray90")
 
-plot(data1.split[[rand.num]]$Nitrate,data1.split[[rand.num]]$Depth,  
-     main="N species interpolation",ylab="Depth [m]", xlab="Nitrate/NH4 [mol/l]",
-     ylim=rev(range(data1.split.interp[[rand.num]]$Depth)), xlim=c(0,max(c(max(data1.split[[rand.num]]$Nitrate),max(data1.split[[rand.num]]$NH4)))), col=1)
-lines(data1.split.interp[[rand.num]]$Nitrate,data1.split.interp[[rand.num]]$Depth,  col=2)
-points(data1.split[[rand.num]]$NH4,data1.split[[rand.num]]$Depth, col=3)
-lines(data1.split.interp[[rand.num]]$NH4,data1.split.interp[[rand.num]]$Depth,  col=4)
+plot(data1.split[[rand.date]]$Nitrate,data1.split[[rand.date]]$Depth,  
+     main=paste("N species interpolation", rand.date),ylab="Depth [m]", xlab="Nitrate/NH4 [mol/l]",
+     ylim=rev(range(data1.split.interp[[rand.date]]$Depth)), xlim=c(0,1.5*max(c(max(data1.split[[rand.date]]$Nitrate),max(data1.split[[rand.date]]$NH4)))), col=1)
+lines(data1.split.interp[[rand.date]]$Nitrate,data1.split.interp[[rand.date]]$Depth,  col=2)
+points(data1.split[[rand.date]]$NH4,data1.split[[rand.date]]$Depth, col=3)
+lines(data1.split.interp[[rand.date]]$NH4,data1.split.interp[[rand.date]]$Depth,  col=4)
 
-legend(0.7*max(c(max(data1.split[[rand.num]]$Nitrate),max(data1.split[[rand.num]]$NH4))), 1, c("Measured NO2", "Interpolation","Measured NH4", "Interpolation"), col = c(1, 2,3,4),
+#place a legend for a geochemical plot
+legend(1.05*max(c(max(data1.split[[rand.num]]$Nitrate),max(data1.split[[rand.num]]$NH4))), 1, c("Measured NO2", "Interpolation","Measured NH4", "Interpolation"), col = c(1, 2,3,4),
        lty = c(NA,1,NA,1), pch = c(1,NA,1,NA),
        merge = TRUE, bg = "gray90")
 
 ```
 
 
-# attach the appropriate depth for each measurment using available depth measurments
+# attach the appropriate depth for each measurment using available daily level measurments
 ```{r eval=TRUE, echo=FALSE}
 # this block arranges the depth of the measurments according to the lake level during that day
 
-#extract unique date values of measurments to be used for real level correction
-dates=as.Date(unique(data1$Date, incomparables = FALSE))
-
 # initialize a data frame to accept the corrected data
-data1.split.interp.depth=list(matrix(data = NA, ncol=n.col.interp, nrow=n.row.interp))
-data1.split.depth=list(matrix(data = NA, ncol=ncol(data1.split[[1]]), nrow=nrow(data1.split[[1]])))
-
+data1.split.interp.depth=vector("list", length(data1.split.interp))
+data1.split.depth=vector("list", length(data1.split.interp))
 
 for (ii in 1:length(dates)){
- data1.split.interp.depth[[ii]]=realdepth(depth.date=data3, measurment.date = dates[ii], input=data1.split.interp[[ii]])
- 
-  data1.split.depth[[ii]]=realdepth(depth.date=data3, measurment.date = dates[ii], input=data1.split[[ii]])
+  temp.date=as.character.Date(dates[ii])
+  temp=realdepth(depth.date=data3, measurment.date=temp.date, input=data1.split.interp[[temp.date]])
+  data1.split.interp.depth[[temp.date]]=data.frame(temp)
+  
+  temp=realdepth(depth.date=data3, measurment.date=temp.date, input=data1.split[[temp.date]])
+  data1.split.depth[[temp.date]]=data.frame(temp)
 }
+#remove any empty elemts of the list
+data1.split.depth[which(names(data1.split.depth) %in% c(""))]=NULL
+data1.split.interp.depth[which(names(data1.split.interp.depth) %in% c(""))]=NULL
 ```
 
 # demonstrate the results according to the new depth scale of a random data
 ```{r eval=TRUE, echo=FALSE}
 # choose a random number to demonstrate the interpolation
 rand.num=sample(1:length(data1.split),1)
+rand.date=as.character.Date(dates[rand.num])
 
-plot(data1.split.depth[[rand.num]]$Oxygen,data1.split.depth[[rand.num]]$Depth,  
-     main="Oxygen interpolation",ylab="Depth [m]", xlab="Oxygen [mol/l]",
-     ylim=rev(range(data1.split.interp.depth[[rand.num]]$Depth)), xlim=c(0, max(data1.split[[rand.num]]$Oxygen)))
-lines(data1.split.interp.depth[[rand.num]]$Oxygen,data1.split.interp.depth[[rand.num]]$Depth,  col=2)
+plot(data1.split.depth[[rand.date]]$Oxygen,data1.split.depth[[rand.date]]$Depth,  
+     main=paste("Oxygen interpolation", rand.date),ylab="Depth [m]", xlab="Oxygen [mol/l]",
+     ylim=range(data1.split.interp.depth[[rand.num]]$Depth), xlim=c(0, max(data1.split[[rand.date]]$Oxygen)))
+lines(data1.split.interp.depth[[rand.date]]$Oxygen,data1.split.interp.depth[[rand.date]]$Depth,  col=2)
 
-legend(0, 1, c("Measured", "Interpolation"), col = c(1, 2),
-       lty = c(NA,1), pch = c(1, NA),
-       merge = TRUE, bg = "gray90")
+#place a legend for an oxygen plot
+legend(0, max(data1.split.interp.depth[[rand.num]]$Depth), c("Measured", "Interpolation"), col = c(1, 2),lty = c(NA,1), pch = c(1, NA), merge = TRUE, bg = "gray90")
 
-plot(data1.split.depth[[rand.num]]$Nitrate,data1.split.depth[[rand.num]]$Depth,  
-     main="N species interpolation",ylab="Depth [m]", xlab="Nitrate/NH4 [mol/l]",
-     ylim=rev(range(data1.split.interp.depth[[rand.num]]$Depth)), xlim=c(0,max(c(max(data1.split[[rand.num]]$Nitrate),max(data1.split[[rand.num]]$NH4)))), col=1)
-lines(data1.split.interp.depth[[rand.num]]$Nitrate,data1.split.interp.depth[[rand.num]]$Depth,  col=2)
-points(data1.split.depth[[rand.num]]$NH4,data1.split.depth[[rand.num]]$Depth, col=3)
-lines(data1.split.interp.depth[[rand.num]]$NH4,data1.split.interp.depth[[rand.num]]$Depth,  col=4)
+plot(data1.split.depth[[rand.date]]$Nitrate,data1.split.depth[[rand.date]]$Depth,  
+     main=paste("N species interpolation", rand.date),ylab="Depth [m]", xlab="Nitrate/NH4 [mol/l]",
+     ylim=range(data1.split.interp.depth[[rand.date]]$Depth), xlim=c(0,1.5*max(c(max(data1.split[[rand.date]]$Nitrate),max(data1.split[[rand.date]]$NH4)))), col=1)
+lines(data1.split.interp.depth[[rand.date]]$Nitrate,data1.split.interp.depth[[rand.date]]$Depth,  col=2)
+points(data1.split.depth[[rand.date]]$NH4,data1.split.depth[[rand.date]]$Depth, col=3)
+lines(data1.split.interp.depth[[rand.date]]$NH4,data1.split.interp.depth[[rand.date]]$Depth,  col=4)
 
-legend(0.7*max(c(max(data1.split[[rand.num]]$Nitrate),max(data1.split[[rand.num]]$NH4))), 1, c("Measured NO2", "Interpolation","Measured NH4", "Interpolation"), col = c(1, 2,3,4),
-       lty = c(NA,1,NA,1), pch = c(1,NA,1,NA),
-       merge = TRUE, bg = "gray90")
+#place a legend for a geochemical plot
+legend(1.05*max(c(max(data1.split[[rand.num]]$Nitrate),max(data1.split[[rand.num]]$NH4))), max(data1.split.interp.depth[[rand.num]]$Depth), c("Measured NO2", "Interpolation","Measured NH4", "Interpolation"), col = c(1, 2,3,4),lty = c(NA,1,NA,1), pch = c(1,NA,1,NA),merge = TRUE, bg = "gray90")
+
+```
+# multiply each depth value with its corresponding hypsometric value
+```{r eval=TRUE, echo=FALSE}
+# this block calculates the total amount using the hypsometric curve of the lake
+
+# initialize a data frame to accept the corrected data
+data1.split.interp.depth.quant=vector("list", length(data1.split.interp.depth))
+data1.split.depth.quant=vector("list", length(data1.split.depth))
+
+for (ii in 1:length(dates)){
+  temp.date=as.character.Date(dates[ii])
+  temp=conctoquant(hypso.curve=data2, input=data1.split.interp.depth[[temp.date]])
+  data1.split.interp.depth.quant[[temp.date]]=data.frame(temp)
+  
+  temp=conctoquant(hypso.curve=data2, input=data1.split.depth[[temp.date]])
+  data1.split.depth.quant[[temp.date]]=data.frame(temp)
+}
+#remove any empty elemts of the list
+data1.split.interp.depth.quant[which(names(data1.split.interp.depth.quant) %in% c(""))]=NULL
+data1.split.depth.quant[which(names(data1.split.depth.quant) %in% c(""))]=NULL
+```
+
+# demonstrate the results according to the new depth scale of a random data
+```{r eval=TRUE, echo=FALSE}
+# choose a random number to demonstrate the interpolation
+rand.num=sample(1:length(data1.split),1)
+rand.date=as.character.Date(dates[rand.num])
+
+plot(data1.split.depth.quant[[rand.date]]$Oxygen,data1.split.depth.quant[[rand.date]]$Depth,  
+     main=paste("Oxygen interpolation", rand.date),ylab="Depth [m]", xlab="Oxygen [quant]",
+     ylim=range(data1.split.interp.depth[[rand.num]]$Depth), xlim=c(0, max(data1.split.depth.quant[[rand.date]]$Oxygen)))
+lines(data1.split.interp.depth.quant[[rand.date]]$Oxygen,data1.split.interp.depth.quant[[rand.date]]$Depth,  col=2)
+
+#place a legend for an oxygen plot
+legend(0, max(data1.split.interp.depth.quant[[rand.num]]$Depth), c("Measured", "Interpolation"), col = c(1, 2),lty = c(NA,1), pch = c(1, NA), merge = TRUE, bg = "gray90")
+
+plot(data1.split.depth.quant[[rand.date]]$Nitrate,data1.split.depth.quant[[rand.date]]$Depth,  
+     main=paste("N species interpolation", rand.date),ylab="Depth [m]", xlab="Nitrate/NH4 [quant]",
+     ylim=range(data1.split.interp.depth[[rand.date]]$Depth), xlim=c(0,1.5*max(c(max(data1.split.depth.quant[[rand.date]]$Nitrate),max(data1.split.depth.quant[[rand.date]]$NH4)))), col=1)
+
+lines(data1.split.interp.depth.quant[[rand.date]]$Nitrate,data1.split.interp.depth.quant[[rand.date]]$Depth,  col=2)
+
+points(data1.split.depth.quant[[rand.date]]$NH4,data1.split.depth.quant[[rand.date]]$Depth, col=3)
+
+lines(data1.split.interp.depth.quant[[rand.date]]$NH4,data1.split.interp.depth.quant[[rand.date]]$Depth,  col=4)
+
+#place a legend for a geochemical plot
+legend(1.05*max(c(max(data1.split.depth.quant[[rand.num]]$Nitrate),max(data1.split.depth.quant[[rand.num]]$NH4))), -215, c("Measured NO2", "Interpolation","Measured NH4", "Interpolation"), col = c(1, 2,3,4),lty = c(NA,1,NA,1), pch = c(1,NA,1,NA),merge = TRUE, bg = "gray90")
 
 ```

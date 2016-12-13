@@ -17,7 +17,9 @@ realdepth <-
 
     #match the best date to the measurment day
     #if the date is found it is used, but in the case of its absence, the closest day is used
-    date.match=which(abs(unlist(as.Date(data3$date))-as.Date(measurment.date))== min(abs(unlist(as.Date(data3$date)-as.Date(measurment.date)))))
+    date.match=which.min(abs(unlist(as.Date(depth.date$date))-as.Date(measurment.date)))
+
+    #date.match=which(abs(unlist(as.Date(depth.date$date))-as.Date(measurment.date))== min(abs(unlist(as.Date(depth.date$date)-as.Date(measurment.date)))))
 
     #extract the appropriate depth
     level.match=depth.date$level[date.match]

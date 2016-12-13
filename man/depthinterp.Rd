@@ -5,7 +5,7 @@
 \title{interpolate data by depth}
 \usage{
 depthinterp(maxdepth = 40, intreval = 1, first.data.col = 3, input,
-  col.num = as.integer(ncol(i[[1]])), depth.col = 2)
+  col.num = ncol(input), depth.col = 2)
 }
 \arguments{
 \item{maxdepth}{(m) max depth to be interpolated for the lake}
@@ -14,14 +14,14 @@ depthinterp(maxdepth = 40, intreval = 1, first.data.col = 3, input,
 
 \item{first.data.col}{(-) the first column of data for interpolation}
 
-\item{input}{(-) input data as list}
+\item{input}{(-) input data as dataframe}
 
 \item{col.num}{(-) number of columns in the original data table}
 
 \item{depth.col}{(-) the column that contains the depths of measurments}
 }
 \value{
-interpolated data for the  (arbitrary units)
+interpolated data for the lake according to the provided maximum depth
 }
 \description{
 this function intepolates a list comprising the N measurments of a lake

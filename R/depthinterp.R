@@ -16,6 +16,9 @@
 
 depthinterp <-
   function(maxdepth=40,intreval=1, first.data.col=3,input,col.num=ncol(input), depth.col=2 ){
+    #extract date of measurment
+    temp.date=as.Date(unlist(input$Date))
+    Date=as.Date(rep(temp.date[1],maxdepth))
 
     #initialize internal variables
     interp.depth=seq(from=1, to=maxdepth, by=1)
@@ -44,7 +47,7 @@ depthinterp <-
     # replace NA with last available values
     df=na.locf(df)
     Depth=interp.depth
-    df2=data.frame(Depth,df)
+    df2=data.frame(Date,Depth,df)
 
     return(df2)
   }
