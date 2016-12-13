@@ -34,7 +34,7 @@ depthinterp <-
     }
 
     # assign column names to the matrix
-    df.names=names(i[[1]])
+    df.names=names(input)
     df.names=df.names[first.data.col:col.num]
     colnames(df, do.NULL = FALSE)
     colnames(df)=c(df.names)

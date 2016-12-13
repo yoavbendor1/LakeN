@@ -17,7 +17,7 @@ This model was written as a project for course 68806 Eco-hydrologic modelling wi
 This model illustrates the annual N cycle in a lake in northern Israel, and simulates the transitions from oxydized species into reduced species
 
 # read the data and load relevant libraries
-```{r Code Block 1, eval=TRUE, echo=FALSE}
+```{r eval=TRUE, echo=FALSE}
 # setwd("C:/Users/user/Documents/LakeN")
 # load relevant libraries
 library(plyr)
@@ -39,27 +39,29 @@ data4=read.table("LakeNData4.txt", header=TRUE)
 data1.split=split(data1, f=data1$Date)
 
 ```
-```{r Code Block 2, eval=TRUE, echo=FALSE}
-# setwd("C:/Users/user/Documents/LakeN")
-# load relevant libraries
-summary(data1)
 
-```
 
 # use the function depthinterp to interpolate the data into uniform length for every m
-```{r Code Block 3, eval=TRUE, echo=FALSE}
+```{r eval=TRUE, echo=FALSE}
 library(LakeN)
 
+n.col.interp=7
+n.row.interp=40
+
+# initialize an empty data frame for interpolation results
+data1.split.interp=list(matrix(data = NA, ncol=n.col.interp, nrow=n.row.interp))
+
 for (ii in 1:length(data1.split)){
-  input=data1.split[[ii]]
-  data1.split.interp[[ii]]=depthinterp(input=input)
-  data1interp=data1.split.interp[[ii]]
+  data1.split.interp[[ii]]=depthinterp(input=data1.split[[ii]])
+  
 }
 ```
 
 # demonstrate some interpolations of random data
-```{r Code Block 4, eval=TRUE, echo=FALSE}
+```{r eval=TRUE, echo=FALSE}
+# choose a random number to demonstrate the interpolation
 rand.num=sample(1:length(data1.split),1)
+
 plot(data1.split[[rand.num]]$Oxygen,data1.split[[rand.num]]$Depth,  
      main="Oxygen interpolation",ylab="Depth [m]", xlab="Oxygen [mol/l]",
      ylim=rev(range(data1.split.interp[[rand.num]]$Depth)), xlim=c(0, max(data1.split[[rand.num]]$Oxygen)))
@@ -82,3 +84,49 @@ legend(0.7*max(c(max(data1.split[[rand.num]]$Nitrate),max(data1.split[[rand.num]
 
 ```
 
+
+# attach the appropriate depth for each measurment using available depth measurments
+```{r eval=TRUE, echo=FALSE}
+# this block arranges the depth of the measurments according to the lake level during that day
+
+#extract unique date values of measurments to be used for real level correction
+dates=as.Date(unique(data1$Date, incomparables = FALSE))
+
+# initialize a data frame to accept the corrected data
+data1.split.interp.depth=list(matrix(data = NA, ncol=n.col.interp, nrow=n.row.interp))
+data1.split.depth=list(matrix(data = NA, ncol=ncol(data1.split[[1]]), nrow=nrow(data1.split[[1]])))
+
+
+for (ii in 1:length(dates)){
+ data1.split.interp.depth[[ii]]=realdepth(depth.date=data3, measurment.date = dates[ii], input=data1.split.interp[[ii]])
+ 
+  data1.split.depth[[ii]]=realdepth(depth.date=data3, measurment.date = dates[ii], input=data1.split[[ii]])
+}
+```
+
+# demonstrate the results according to the new depth scale of a random data
+```{r eval=TRUE, echo=FALSE}
+# choose a random number to demonstrate the interpolation
+rand.num=sample(1:length(data1.split),1)
+
+plot(data1.split.depth[[rand.num]]$Oxygen,data1.split.depth[[rand.num]]$Depth,  
+     main="Oxygen interpolation",ylab="Depth [m]", xlab="Oxygen [mol/l]",
+     ylim=rev(range(data1.split.interp.depth[[rand.num]]$Depth)), xlim=c(0, max(data1.split[[rand.num]]$Oxygen)))
+lines(data1.split.interp.depth[[rand.num]]$Oxygen,data1.split.interp.depth[[rand.num]]$Depth,  col=2)
+
+legend(0, 1, c("Measured", "Interpolation"), col = c(1, 2),
+       lty = c(NA,1), pch = c(1, NA),
+       merge = TRUE, bg = "gray90")
+
+plot(data1.split.depth[[rand.num]]$Nitrate,data1.split.depth[[rand.num]]$Depth,  
+     main="N species interpolation",ylab="Depth [m]", xlab="Nitrate/NH4 [mol/l]",
+     ylim=rev(range(data1.split.interp.depth[[rand.num]]$Depth)), xlim=c(0,max(c(max(data1.split[[rand.num]]$Nitrate),max(data1.split[[rand.num]]$NH4)))), col=1)
+lines(data1.split.interp.depth[[rand.num]]$Nitrate,data1.split.interp.depth[[rand.num]]$Depth,  col=2)
+points(data1.split.depth[[rand.num]]$NH4,data1.split.depth[[rand.num]]$Depth, col=3)
+lines(data1.split.interp.depth[[rand.num]]$NH4,data1.split.interp.depth[[rand.num]]$Depth,  col=4)
+
+legend(0.7*max(c(max(data1.split[[rand.num]]$Nitrate),max(data1.split[[rand.num]]$NH4))), 1, c("Measured NO2", "Interpolation","Measured NH4", "Interpolation"), col = c(1, 2,3,4),
+       lty = c(NA,1,NA,1), pch = c(1,NA,1,NA),
+       merge = TRUE, bg = "gray90")
+
+```
