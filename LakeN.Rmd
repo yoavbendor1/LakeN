@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE , root.dir="F:/MyDocuments/GIT/LakeN"}
-knitr::opts_chunk$set(echo = FALSE , warning=FALSE)
+knitr::opts_chunk$set(echo = FALSE , warning=FALSE, message=FALSE)
 
 
 setwd("F:/MyDocuments/GIT/LakeN/R")
@@ -14,20 +14,15 @@ source('depthinterp.R')
 source('realdepth.R')
 source('conctoquant.R')
 
-setwd("F:/MyDocuments/GIT/LakeN")
 
 
 ```
 
-## Lake N model
-# Yoav Ben Dor
-
 This model was written as a project for course 68806 Eco-hydrologic modelling with R
 This model illustrates the annual N cycle in a lake in northern Israel, and simulates the transitions from oxydized species into reduced species
 
-# read the data and load relevant libraries
-```{r echo=FALSE, warning=FALSE}
-# setwd("C:/Users/user/Documents/LakeN")
+### read the data and load relevant libraries
+```{r echo=TRUE, warning=FALSE, message=FALSE}
 # load relevant libraries
 library(plyr)
 library(zoo)
@@ -36,10 +31,18 @@ library(LakeN)
 
 # read the data for the model
 # use the read.table function in the cas of a tab=delimited text file
-# use the read.csv function for a , delimited text file
+# use the read.csv function for a csv
+
+# data1 - measured gecochmical profiles
 data1=read.table("LakeNData1.txt", header=TRUE)
+
+# data2 - lake hypsometric curve including depth to area transformation
 data2=read.table("LakeNData2.txt", header=TRUE)
+
+# data3 - lake level measurments for depth corrections
 data3=read.table("LakeNData3.txt", header=TRUE)
+
+# data1 - temperature profile measurments
 data4=read.table("LakeNData4.txt", header=TRUE)
 
 #split the data set by measurment date
@@ -47,12 +50,12 @@ data1.split=split(data1, f=data1$Date)
 
 ```
 
-# Interpolate the Data into 1 m Intervals
-## Use the function "depthinterp"" to interpolate the data into uniform length for every 1 m
-```{r echo=FALSE, warning=FALSE}
+## Interpolate the Data into 1 m Intervals
+ Use the function "depthinterp"" to interpolate the data into uniform length for every 1 m
+```{r echo=TRUE, warning=FALSE, message=FALSE}
 
 #define matrix size requiered for interpolating the data
-n.col.interp=7
+n.col.interp=ncol(data1.split[[1]])
 n.row.interp=40
 
 #extract unique date values of measurments to be used for real level correction
@@ -61,8 +64,7 @@ dates=as.Date(unique(data1$Date, incomparables = FALSE))
 # initialize an empty data frame for interpolation results
 data1.split.interp=vector("list", length(data1.split))
 
-#data1.split.interp=list(matrix(data = NA, ncol=n.col.interp, nrow=n.row.interp))
-
+# run interpolation function for each element
 for (ii in 1:length(data1.split)){
   temp=depthinterp(input=data1.split[[ii]])
   temp.name=as.character.Date(dates[ii])
@@ -73,8 +75,8 @@ data1.split.interp[which(names(data1.split.interp) %in% c(""))]=NULL
 ```
 
 
-## Demonstrate interpolations of randomly selected data
-```{r echo=FALSE, warning=FALSE}
+### Demonstrate interpolations of randomly selected data
+```{r echo=FALSE, warning=FALSE, message=FALSE}
 # choose a random number to demonstrate the interpolation
 rand.num=sample(1:length(data1.split),1)
 rand.date=as.character.Date(dates[rand.num])
@@ -103,15 +105,16 @@ legend(1.05*max(c(max(data1.split[[rand.num]]$Nitrate),max(data1.split[[rand.num
 
 ```
 
-# Depth and Level Corrections
-## calculate the appropriate depth for each measurment using available daily level measurments. Use function "realdepth" and use closest day if no level measurment of that day is available.
-```{r echo=FALSE, warning=FALSE}
+## Depth and Level Corrections
+calculate the appropriate depth for each measurment using available daily level measurments. Use function "realdepth" and use closest day if no level measurment of that day is available.
+```{r echo=TRUE, warning=FALSE, message=FALSE}
 # this block arranges the depth of the measurments according to the lake level during that day
 
 # initialize a data frame to accept the corrected data
 data1.split.interp.depth=vector("list", length(data1.split.interp))
 data1.split.depth=vector("list", length(data1.split.interp))
 
+# run depth correction function for each element
 for (ii in 1:length(dates)){
   temp.date=as.character.Date(dates[ii])
   temp=realdepth(depth.date=data3, measurment.date=temp.date, input=data1.split.interp[[temp.date]])
@@ -125,8 +128,8 @@ data1.split.depth[which(names(data1.split.depth) %in% c(""))]=NULL
 data1.split.interp.depth[which(names(data1.split.interp.depth) %in% c(""))]=NULL
 ```
 
-# demonstrate the results according to the new depth scale of a random data
-```{r echo=FALSE, warning=FALSE}
+### demonstrate the results according to the new depth scale of randomly selected data
+```{r echo=FALSE, warning=FALSE, message=FALSE}
 # choose a random number to demonstrate the interpolation
 rand.num=sample(1:length(data1.split),1)
 rand.date=as.character.Date(dates[rand.num])
@@ -151,16 +154,17 @@ legend(1.05*max(c(max(data1.split[[rand.num]]$Nitrate),max(data1.split[[rand.num
 
 ```
 
-# Quantify the data using lake hypsometric curve
+## Quantify the data using lake hypsometric curve
 
-## Quantify the amount of measured species using the hypsomentric curve of the lake using function "conctoquant". Multiply each depth value with its corresponding hypsometric value
-```{r echo=FALSE, warning=FALSE}
+Quantify the amount of measured species using the hypsomentric curve of the lake using function "conctoquant". Multiply each depth value with its corresponding hypsometric value
+```{r echo=TRUE, warning=FALSE, message=FALSE}
 # this block calculates the total amount using the hypsometric curve of the lake
 
 # initialize a data frame to accept the corrected data
 data1.split.interp.depth.quant=vector("list", length(data1.split.interp.depth))
 data1.split.depth.quant=vector("list", length(data1.split.depth))
 
+# run quantification function for each element
 for (ii in 1:length(dates)){
   temp.date=as.character.Date(dates[ii])
   temp=conctoquant(hypso.curve=data2, input=data1.split.interp.depth[[temp.date]])
@@ -174,8 +178,8 @@ data1.split.interp.depth.quant[which(names(data1.split.interp.depth.quant) %in% 
 data1.split.depth.quant[which(names(data1.split.depth.quant) %in% c(""))]=NULL
 ```
 
-## demonstrate the results according to the new depth scale of a random data
-```{r echo=FALSE, warning=FALSE}
+### demonstrate the results according to the new depth scale of randomly selected data
+```{r echo=FALSE, warning=FALSE, message=FALSE}
 # choose a random number to demonstrate the interpolation
 rand.num=sample(1:length(data1.split),1)
 rand.date=as.character.Date(dates[rand.num])
@@ -201,4 +205,23 @@ lines(data1.split.interp.depth.quant[[rand.date]]$NH4,data1.split.interp.depth.q
 #place a legend for a geochemical plot
 legend(1.05*max(c(max(data1.split.depth.quant[[rand.num]]$Nitrate),max(data1.split.depth.quant[[rand.num]]$NH4))), -215, c("Measured NO2", "Interpolation","Measured NH4", "Interpolation"), col = c(1, 2,3,4),lty = c(NA,1,NA,1), pch = c(1,NA,1,NA),merge = TRUE, bg = "gray90")
 
+```
+
+
+## Demonstrate some data features and calculate processes related parameters
+
+Quantify the amount of measured species using the hypsomentric curve of the lake using function "conctoquant". Multiply each depth value with its corresponding hypsometric value
+```{r echo=TRUE, warning=FALSE, message=FALSE}
+# this block 
+
+# create a dataframe based on interpolated data in list
+# load the first element of the list
+temp.2=as.data.frame(data1.split.interp.depth.quant[[1]])
+
+# load all other elements in a loop
+for (ii in 2:length(data1.split.interp.depth.quant)){
+temp=as.data.frame(data1.split.interp.depth.quant[[ii]])
+temp.2=rbind(temp.2,temp)
+}
+data1.split.interp.depth.quant.df=temp.2
 ```
