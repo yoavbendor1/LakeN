@@ -25,15 +25,22 @@ depthinterp <-
     # extract measurments depths
     input.depth=as.numeric(unlist(input[,c(depth.col)]))
 
-    #initialize output matrix for interpolation
-    df=matrix(data=NA, nrow=maxdepth, ncol=col.num-first.data.col+1)
+    #find columns that are all NA and fill them with zero prior to interpolation
+    zero.index=NA
+    zero.index=which(sapply(input, function(x)all(is.na(x))))
+    #zero.index=df[ , colSums(is.na(df)) == 0]
+    if (is.integer(zero.index)){
+      input[,zero.index]=c(rep.int(0, times=nrow(input)))}
+
+    #initialize output matrix [df] for interpolation
+    df=data.frame(matrix(data=NA, nrow=maxdepth, ncol=ncol(input)-first.data.col+1))
 
     # initialize interpolation loop
-    for(ii in first.data.col:col.num){
-      input.var=as.numeric(unlist(input[,c(ii)]))
+    for(jj in first.data.col:col.num){
+      input.var=as.numeric(unlist(input[,c(jj)]))
       app.var=approx(input.depth,input.var, xout=interp.depth, method="linear")
       app.var=as.numeric(unlist(app.var[2]))
-      df[,ii-first.data.col+1]=c(app.var)
+      df[,jj-first.data.col+1]=c(as.numeric(app.var))
     }
 
     # assign column names to the matrix

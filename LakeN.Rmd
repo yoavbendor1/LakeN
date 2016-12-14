@@ -8,13 +8,12 @@ output: html_document
 ```{r setup, include=FALSE , root.dir="F:/MyDocuments/GIT/LakeN"}
 knitr::opts_chunk$set(echo = FALSE , warning=FALSE, message=FALSE)
 
-
 setwd("F:/MyDocuments/GIT/LakeN/R")
 source('depthinterp.R')
 source('realdepth.R')
 source('conctoquant.R')
 
-
+setwd("F:/MyDocuments/GIT/LakeN")
 
 ```
 
@@ -28,6 +27,7 @@ library(plyr)
 library(zoo)
 library(dplyr)
 library(LakeN)
+library(plot3D)
 
 # read the data for the model
 # use the read.table function in the cas of a tab=delimited text file
@@ -45,13 +45,45 @@ data3=read.table("LakeNData3.txt", header=TRUE)
 # data1 - temperature profile measurments
 data4=read.table("LakeNData4.txt", header=TRUE)
 
-#split the data set by measurment date
-data1.split=split(data1, f=data1$Date)
+# split the data set by measurment date
+data1.split.orig=split(data1, f=data1$Date)
+
+# fill NA cells with linear interpolation in original data
+# initilize list to be filled
+data1.split=vector("list", length(data1.split.orig))
+
+first.data.col=3
+dates=as.Date(unique(data1$Date, incomparables = FALSE))
+
+for (ii in 1:length(data1.split.orig)){
+  temp.df=data1.split.orig[[ii]]
+  
+  #find columns that are all NA and zero fill them prior to interpolation
+  zero.index=NA
+  zero.index=which(sapply(temp.df, function(x)all(is.na(x))))
+  if (is.integer(zero.index)){
+    temp.df[,zero.index]=c(rep.int(0, times=nrow(temp.df)))}
+  
+  # fill NA values confined between numbers using linear interoplation
+  for (jj in first.data.col:ncol(temp.df)){
+    app.var=as.double(na.approx(x=temp.df$Depth,as.numeric(unlist(temp.df[,jj])), method="linear",na.rm=FALSE))
+    # remove NA values that are not confined between numbers with nearest value
+    temp.df[,jj]=as.double(na.locf(na.locf(app.var,na.rm=FALSE),na.rm=FALSE, fromLast=TRUE))
+  }
+  
+  #assign the interpolated values into the results list
+  temp.name=as.character.Date(dates[ii])
+  data1.split[[temp.name]]=data.frame(temp.df)
+  rm(temp.df)
+}
+
+#remove any empty elemts of the list
+data1.split[which(names(data1.split) %in% c(""))]=NULL
 
 ```
 
 ## Interpolate the Data into 1 m Intervals
- Use the function "depthinterp"" to interpolate the data into uniform length for every 1 m
+Use the function "depthinterp"" to interpolate the data into uniform length for every 1 m
 ```{r echo=TRUE, warning=FALSE, message=FALSE}
 
 #define matrix size requiered for interpolating the data
@@ -66,7 +98,7 @@ data1.split.interp=vector("list", length(data1.split))
 
 # run interpolation function for each element
 for (ii in 1:length(data1.split)){
-  temp=depthinterp(input=data1.split[[ii]])
+  temp=depthinterp(input=na.locf(data1.split[[ii]]))
   temp.name=as.character.Date(dates[ii])
   data1.split.interp[[temp.name]]=data.frame(temp)
 }
@@ -83,7 +115,8 @@ rand.date=as.character.Date(dates[rand.num])
 
 plot(data1.split[[rand.date]]$Oxygen,data1.split[[rand.date]]$Depth,  
      main=paste("Oxygen interpolation", rand.date),ylab="Depth [m]", xlab="Oxygen [mol/l]",
-     ylim=rev(range(data1.split.interp[[rand.num]]$Depth)), xlim=c(0, max(data1.split[[rand.num]]$Oxygen)))
+     ylim=rev(range(data1.split.interp[[rand.num]]$Depth)),
+     xlim=c(0, as.double(max(data1.split[[rand.num]]$Oxygen))))
 lines(data1.split.interp[[rand.date]]$Oxygen,data1.split.interp[[rand.date]]$Depth,  col=2)
 
 #place a legend for an oxygen plot
@@ -93,13 +126,14 @@ legend(0, 1, c("Measured", "Interpolation"), col = c(1, 2),
 
 plot(data1.split[[rand.date]]$Nitrate,data1.split[[rand.date]]$Depth,  
      main=paste("N species interpolation", rand.date),ylab="Depth [m]", xlab="Nitrate/NH4 [mol/l]",
-     ylim=rev(range(data1.split.interp[[rand.date]]$Depth)), xlim=c(0,1.5*max(c(max(data1.split[[rand.date]]$Nitrate),max(data1.split[[rand.date]]$NH4)))), col=1)
+     ylim=rev(range(data1.split.interp[[rand.date]]$Depth)), xlim=c(0,1.5*as.double(max(c(range(data1.split[[rand.date]]$Nitrate),range(data1.split[[rand.date]]$NH4))))), col=1)
+
 lines(data1.split.interp[[rand.date]]$Nitrate,data1.split.interp[[rand.date]]$Depth,  col=2)
 points(data1.split[[rand.date]]$NH4,data1.split[[rand.date]]$Depth, col=3)
 lines(data1.split.interp[[rand.date]]$NH4,data1.split.interp[[rand.date]]$Depth,  col=4)
 
 #place a legend for a geochemical plot
-legend(1.05*max(c(max(data1.split[[rand.num]]$Nitrate),max(data1.split[[rand.num]]$NH4))), 1, c("Measured NO2", "Interpolation","Measured NH4", "Interpolation"), col = c(1, 2,3,4),
+legend(1.05*as.double(max(c(max(data1.split[[rand.num]]$Nitrate),max(data1.split[[rand.num]]$NH4)))), 1, c("Measured NO2", "Interpolation","Measured NH4", "Interpolation"), col = c(1, 2,3,4),
        lty = c(NA,1,NA,1), pch = c(1,NA,1,NA),
        merge = TRUE, bg = "gray90")
 
@@ -136,21 +170,21 @@ rand.date=as.character.Date(dates[rand.num])
 
 plot(data1.split.depth[[rand.date]]$Oxygen,data1.split.depth[[rand.date]]$Depth,  
      main=paste("Oxygen interpolation", rand.date),ylab="Depth [m]", xlab="Oxygen [mol/l]",
-     ylim=range(data1.split.interp.depth[[rand.num]]$Depth), xlim=c(0, max(data1.split[[rand.date]]$Oxygen)))
+     ylim=range(data1.split.interp.depth[[rand.num]]$Depth), xlim=c(0, max(as.double(data1.split[[rand.date]]$Oxygen))))
 lines(data1.split.interp.depth[[rand.date]]$Oxygen,data1.split.interp.depth[[rand.date]]$Depth,  col=2)
 
 #place a legend for an oxygen plot
-legend(0, max(data1.split.interp.depth[[rand.num]]$Depth), c("Measured", "Interpolation"), col = c(1, 2),lty = c(NA,1), pch = c(1, NA), merge = TRUE, bg = "gray90")
+legend(0, as.double(max(data1.split.interp.depth[[rand.num]]$Depth)), c("Measured", "Interpolation"), col = c(1, 2),lty = c(NA,1), pch = c(1, NA), merge = TRUE, bg = "gray90")
 
 plot(data1.split.depth[[rand.date]]$Nitrate,data1.split.depth[[rand.date]]$Depth,  
      main=paste("N species interpolation", rand.date),ylab="Depth [m]", xlab="Nitrate/NH4 [mol/l]",
-     ylim=range(data1.split.interp.depth[[rand.date]]$Depth), xlim=c(0,1.5*max(c(max(data1.split[[rand.date]]$Nitrate),max(data1.split[[rand.date]]$NH4)))), col=1)
+     ylim=range(data1.split.interp.depth[[rand.date]]$Depth), xlim=c(0,1.5*max(c(max(as.double((data1.split[[rand.date]]$Nitrate))),max(as.double(data1.split[[rand.date]]$NH4))))), col=1)
 lines(data1.split.interp.depth[[rand.date]]$Nitrate,data1.split.interp.depth[[rand.date]]$Depth,  col=2)
 points(data1.split.depth[[rand.date]]$NH4,data1.split.depth[[rand.date]]$Depth, col=3)
 lines(data1.split.interp.depth[[rand.date]]$NH4,data1.split.interp.depth[[rand.date]]$Depth,  col=4)
 
 #place a legend for a geochemical plot
-legend(1.05*max(c(max(data1.split[[rand.num]]$Nitrate),max(data1.split[[rand.num]]$NH4))), max(data1.split.interp.depth[[rand.num]]$Depth), c("Measured NO2", "Interpolation","Measured NH4", "Interpolation"), col = c(1, 2,3,4),lty = c(NA,1,NA,1), pch = c(1,NA,1,NA),merge = TRUE, bg = "gray90")
+legend(1.05*max(c(max(as.double(data1.split[[rand.num]]$Nitrate)),max(as.double(data1.split[[rand.num]]$NH4)))), max(data1.split.interp.depth[[rand.num]]$Depth), c("Measured NO2", "Interpolation","Measured NH4", "Interpolation"), col = c(1, 2,3,4),lty = c(NA,1,NA,1), pch = c(1,NA,1,NA),merge = TRUE, bg = "gray90")
 
 ```
 
@@ -186,15 +220,15 @@ rand.date=as.character.Date(dates[rand.num])
 
 plot(data1.split.depth.quant[[rand.date]]$Oxygen,data1.split.depth.quant[[rand.date]]$Depth,  
      main=paste("Oxygen interpolation", rand.date),ylab="Depth [m]", xlab="Oxygen [quant]",
-     ylim=range(data1.split.interp.depth[[rand.num]]$Depth), xlim=c(0, max(data1.split.depth.quant[[rand.date]]$Oxygen)))
+     ylim=range(data1.split.interp.depth[[rand.num]]$Depth), xlim=c(0, max(as.double(data1.split.depth.quant[[rand.date]]$Oxygen))))
 lines(data1.split.interp.depth.quant[[rand.date]]$Oxygen,data1.split.interp.depth.quant[[rand.date]]$Depth,  col=2)
 
 #place a legend for an oxygen plot
-legend(0, max(data1.split.interp.depth.quant[[rand.num]]$Depth), c("Measured", "Interpolation"), col = c(1, 2),lty = c(NA,1), pch = c(1, NA), merge = TRUE, bg = "gray90")
+legend(0, max(as.double(data1.split.interp.depth.quant[[rand.num]]$Depth)), c("Measured", "Interpolation"), col = c(1, 2),lty = c(NA,1), pch = c(1, NA), merge = TRUE, bg = "gray90")
 
 plot(data1.split.depth.quant[[rand.date]]$Nitrate,data1.split.depth.quant[[rand.date]]$Depth,  
      main=paste("N species interpolation", rand.date),ylab="Depth [m]", xlab="Nitrate/NH4 [quant]",
-     ylim=range(data1.split.interp.depth[[rand.date]]$Depth), xlim=c(0,1.5*max(c(max(data1.split.depth.quant[[rand.date]]$Nitrate),max(data1.split.depth.quant[[rand.date]]$NH4)))), col=1)
+     ylim=range(data1.split.interp.depth[[rand.date]]$Depth), xlim=c(0,1.5*max(c(max(as.double(data1.split.depth.quant[[rand.date]]$Nitrate),max(as.double(data1.split.depth.quant[[rand.date]]$NH4)))))), col=1)
 
 lines(data1.split.interp.depth.quant[[rand.date]]$Nitrate,data1.split.interp.depth.quant[[rand.date]]$Depth,  col=2)
 
@@ -203,7 +237,7 @@ points(data1.split.depth.quant[[rand.date]]$NH4,data1.split.depth.quant[[rand.da
 lines(data1.split.interp.depth.quant[[rand.date]]$NH4,data1.split.interp.depth.quant[[rand.date]]$Depth,  col=4)
 
 #place a legend for a geochemical plot
-legend(1.05*max(c(max(data1.split.depth.quant[[rand.num]]$Nitrate),max(data1.split.depth.quant[[rand.num]]$NH4))), -215, c("Measured NO2", "Interpolation","Measured NH4", "Interpolation"), col = c(1, 2,3,4),lty = c(NA,1,NA,1), pch = c(1,NA,1,NA),merge = TRUE, bg = "gray90")
+legend(1.05*max(c((data1.split.depth.quant[[rand.num]]$Nitrate),max(data1.split.depth.quant[[rand.num]]$NH4))), -215, c("Measured NO2", "Interpolation","Measured NH4", "Interpolation"), col = c(1, 2,3,4),lty = c(NA,1,NA,1), pch = c(1,NA,1,NA),merge = TRUE, bg = "gray90")
 
 ```
 
@@ -211,7 +245,7 @@ legend(1.05*max(c(max(data1.split.depth.quant[[rand.num]]$Nitrate),max(data1.spl
 ## Demonstrate some data features and calculate processes related parameters
 
 Quantify the amount of measured species using the hypsomentric curve of the lake using function "conctoquant". Multiply each depth value with its corresponding hypsometric value
-```{r echo=TRUE, warning=FALSE, message=FALSE}
+```{r echo=FALSE, warning=FALSE, message=FALSE}
 # this block 
 
 # create a dataframe based on interpolated data in list
@@ -220,8 +254,66 @@ temp.2=as.data.frame(data1.split.interp.depth.quant[[1]])
 
 # load all other elements in a loop
 for (ii in 2:length(data1.split.interp.depth.quant)){
-temp=as.data.frame(data1.split.interp.depth.quant[[ii]])
-temp.2=rbind(temp.2,temp)
+  temp=as.data.frame(data1.split.interp.depth.quant[[ii]])
+  temp.2=rbind(temp.2,temp)
 }
 data1.split.interp.depth.quant.df=temp.2
+```
+
+## Create some time series plots to estimate depth-time processes
+
+the following plots provide some visual estimation of the data to visualize time-depth processes
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+
+# create x (date) and y (depth) vectors for plots
+x= as.numeric(data1.split.interp.depth.quant.df$Date)
+dim(x)=c(40,length(x)/40)
+y= rep(seq(from=1, to=40, by=1), length(x)/40)
+dim(y)=c(40,length(y)/40)
+
+# uncomment these lines for absolute depth y axis
+# remember to remove rev command from image2d
+
+# y= as.numeric(data1.split.interp.depth.quant.df$Depth)
+# dim(y)=c(40,length(y)/40)
+
+# plot Oxygen values
+z= data1.split.interp.depth.quant.df$Oxygen
+dim(z)=c(40,length(z)/40)
+image2D(z,x,y, main="Oxygen [amount]",xlab='',ylab="depth [m]",ylim=rev(range(y)),xaxt="n")
+r <- as.POSIXct(range(data1.split.interp.depth.quant.df$Date), "weeks")
+axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%Y-%b")
+lines(as.numeric(data3$date),abs(data3$depth), col="red")
+
+# plot Nitrate values
+z= data1.split.interp.depth.quant.df$Nitrate
+dim(z)=c(40,length(z)/40)
+image2D(z,x,y, main="Nitrate [amount]",xlab='',ylab="depth [m]",ylim=rev(range(y)),xaxt="n")
+r <- as.POSIXct(range(data1.split.interp.depth.quant.df$Date), "weeks")
+axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%Y-%b")
+lines(as.numeric(data3$date),abs(data3$depth), col="red")
+
+# plot NH4 values
+z= data1.split.interp.depth.quant.df$NH4
+dim(z)=c(40,length(z)/40)
+image2D(z,x,y, main="NH4 [amount]",xlab='',ylab="depth [m]",ylim=rev(range(y)),xaxt="n")
+r <- as.POSIXct(range(data1.split.interp.depth.quant.df$Date), "weeks")
+axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%Y-%b")
+lines(as.numeric(data3$date),abs(data3$depth), col="red")
+
+# plot Norparticular values
+z= data1.split.interp.depth.quant.df$Norg_par
+dim(z)=c(40,length(z)/40)
+image2D(z,x,y, main="N Organic particular [amount]",xlab='',ylab="depth [m]",ylim=rev(range(y)),xaxt="n")
+r <- as.POSIXct(range(data1.split.interp.depth.quant.df$Date), "weeks")
+axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%Y-%b")
+lines(as.numeric(data3$date),abs(data3$depth), col="red")
+
+# plot Ntot values
+z= data1.split.interp.depth.quant.df$Ntot
+dim(z)=c(40,length(z)/40)
+image2D(z,x,y, main="Total N [amount]",xlab='',ylab="depth [m]",ylim=rev(range(y)),xaxt="n")
+r <- as.POSIXct(range(data1.split.interp.depth.quant.df$Date), "weeks")
+axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%Y-%b")
+lines(as.numeric(data3$date),abs(data3$depth), col="red")
 ```
