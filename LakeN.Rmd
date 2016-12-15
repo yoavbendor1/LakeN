@@ -12,6 +12,7 @@ setwd("F:/MyDocuments/GIT/LakeN/R")
 source('depthinterp.R')
 source('realdepth.R')
 source('conctoquant.R')
+source('daytoseason.R')
 
 setwd("F:/MyDocuments/GIT/LakeN")
 
@@ -28,6 +29,7 @@ library(zoo)
 library(dplyr)
 library(LakeN)
 library(plot3D)
+library(ggplot2)
 
 # read the data for the model
 # use the read.table function in the cas of a tab=delimited text file
@@ -258,6 +260,10 @@ for (ii in 2:length(data1.split.interp.depth.quant)){
   temp.2=rbind(temp.2,temp)
 }
 data1.split.interp.depth.quant.df=temp.2
+
+#create a data frame where depth values are 1 to 40
+data1.split.interp.quant.df=data1.split.interp.depth.quant.df
+data1.split.interp.quant.df[["Depth"]]=rep(seq(from=1, to=40, by=1),length(data1.split.interp.quant.df[["Depth"]])/40)
 ```
 
 ## Create some time series plots to estimate depth-time processes
@@ -282,38 +288,97 @@ z= data1.split.interp.depth.quant.df$Oxygen
 dim(z)=c(40,length(z)/40)
 image2D(z,x,y, main="Oxygen [amount]",xlab='',ylab="depth [m]",ylim=rev(range(y)),xaxt="n")
 r <- as.POSIXct(range(data1.split.interp.depth.quant.df$Date), "weeks")
-axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%Y-%b")
-lines(as.numeric(data3$date),abs(data3$depth), col="red")
+axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%m-%Y")
 
 # plot Nitrate values
 z= data1.split.interp.depth.quant.df$Nitrate
 dim(z)=c(40,length(z)/40)
 image2D(z,x,y, main="Nitrate [amount]",xlab='',ylab="depth [m]",ylim=rev(range(y)),xaxt="n")
 r <- as.POSIXct(range(data1.split.interp.depth.quant.df$Date), "weeks")
-axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%Y-%b")
-lines(as.numeric(data3$date),abs(data3$depth), col="red")
+axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%m-%Y")
 
 # plot NH4 values
 z= data1.split.interp.depth.quant.df$NH4
 dim(z)=c(40,length(z)/40)
 image2D(z,x,y, main="NH4 [amount]",xlab='',ylab="depth [m]",ylim=rev(range(y)),xaxt="n")
 r <- as.POSIXct(range(data1.split.interp.depth.quant.df$Date), "weeks")
-axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%Y-%b")
-lines(as.numeric(data3$date),abs(data3$depth), col="red")
+axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%m-%Y")
 
 # plot Norparticular values
 z= data1.split.interp.depth.quant.df$Norg_par
 dim(z)=c(40,length(z)/40)
 image2D(z,x,y, main="N Organic particular [amount]",xlab='',ylab="depth [m]",ylim=rev(range(y)),xaxt="n")
 r <- as.POSIXct(range(data1.split.interp.depth.quant.df$Date), "weeks")
-axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%Y-%b")
-lines(as.numeric(data3$date),abs(data3$depth), col="red")
+axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%m-%Y")
 
 # plot Ntot values
 z= data1.split.interp.depth.quant.df$Ntot
 dim(z)=c(40,length(z)/40)
 image2D(z,x,y, main="Total N [amount]",xlab='',ylab="depth [m]",ylim=rev(range(y)),xaxt="n")
 r <- as.POSIXct(range(data1.split.interp.depth.quant.df$Date), "weeks")
-axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%Y-%b")
-lines(as.numeric(data3$date),abs(data3$depth), col="red")
+axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%m-%Y")
+
+
+```
+## Create some time series depth cross sections
+
+the following plots provide some visual estimation of the data to visualize time-depth processes
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+
+# plot a section through the data
+x.depth=seq(from=5, to=40, by=5)
+
+#initilize Oxygen plot
+depth.indices=which(match(data1.split.interp.quant.df$Depth,x.depth[1])==1)
+pox=ggplot(data=data1.split.interp.quant.df[depth.indices,], aes(x=Date, y=Oxygen, colour=Depth))+geom_line()
+pox=pox+labs(title="Oxygen" ,x = "Month", y = "Oxygen[quant]")
+pox=pox+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
+pox=pox+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpoint = 20)
+
+for (ii in 2:length(x.depth)){
+  depth.indices=which(match(data1.split.interp.quant.df$Depth,x.depth[ii])==1)
+pox=pox+geom_line(data=data1.split.interp.quant.df[depth.indices,], aes(x=Date, y=Oxygen, colour=Depth))
+}
+pox
+
+#initilize Nitrate plot
+depth.indices=which(match(data1.split.interp.quant.df$Depth,x.depth[1])==1)
+pnit=ggplot(data=data1.split.interp.quant.df[depth.indices,], aes(x=Date, y=Nitrate, colour=Depth))+geom_line()
+pnit=pnit+labs(title="Nitrate" ,x = "Month", y = "Oxygen[quant]")
+pnit=pnit+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
+pnit=pnit+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpoint = 20)
+
+for (ii in 2:length(x.depth)){
+  depth.indices=which(match(data1.split.interp.quant.df$Depth,x.depth[ii])==1)
+pnit=pnit+geom_line(data=data1.split.interp.quant.df[depth.indices,], aes(x=Date, y=Nitrate, colour=Depth))
+}
+pnit
+
+#initilize NH4 plot
+depth.indices=which(match(data1.split.interp.quant.df$Depth,x.depth[1])==1)
+pnh4=ggplot(data=data1.split.interp.quant.df[depth.indices,], aes(x=Date, y=NH4, colour=Depth))+geom_line()
+pnh4=pnh4+labs(title="NH4" ,x = "Month", y = "Oxygen[quant]")
+pnh4=pnh4+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
+pnh4=pnh4+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpoint = 20)
+for (ii in 2:length(x.depth)){
+  depth.indices=which(match(data1.split.interp.quant.df$Depth,x.depth[ii])==1)
+pnh4=pnh4+geom_line(data=data1.split.interp.quant.df[depth.indices,], aes(x=Date, y=NH4, colour=Depth))
+}
+pnh4
+
+```
+
+## Create some correlation plots
+
+the following plots provide some visual estimation of the data correlation
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+
+d=ggplot(data=data1.split.interp.quant.df, aes(x=Oxygen, y=Nitrate, colour=Depth))+geom_point()
+d=d+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpoint = 20)
+d
+
+d=ggplot(data=data1.split.interp.quant.df, aes(x=Oxygen, y=Nitrate, colour=as.Date))+geom_point()
+d=d+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpoint = 20)
+d
+
 ```
