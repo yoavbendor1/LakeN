@@ -22,7 +22,7 @@ This model was written as a project for course 68806 Eco-hydrologic modelling wi
 This model illustrates the annual N cycle in a lake in northern Israel, and simulates the transitions from oxydized species into reduced species
 
 ### read the data and load relevant libraries
-```{r echo=TRUE, warning=FALSE, message=FALSE}
+```{r data read, echo=TRUE, warning=FALSE, message=FALSE}
 # load relevant libraries
 library(plyr)
 library(zoo)
@@ -86,7 +86,7 @@ data1.split[which(names(data1.split) %in% c(""))]=NULL
 
 ## Interpolate the Data into 1 m Intervals
 Use the function "depthinterp"" to interpolate the data into uniform length for every 1 m
-```{r echo=TRUE, warning=FALSE, message=FALSE}
+```{r interpolation, echo=TRUE, warning=FALSE, message=FALSE}
 
 #define matrix size requiered for interpolating the data
 n.col.interp=ncol(data1.split[[1]])
@@ -110,7 +110,7 @@ data1.split.interp[which(names(data1.split.interp) %in% c(""))]=NULL
 
 
 ### Demonstrate interpolations of randomly selected data
-```{r echo=FALSE, warning=FALSE, message=FALSE}
+```{r interpolation plots, echo=FALSE, warning=FALSE, message=FALSE}
 # choose a random number to demonstrate the interpolation
 rand.num=sample(1:length(data1.split),1)
 rand.date=as.character.Date(dates[rand.num])
@@ -143,7 +143,7 @@ legend(1.05*as.double(max(c(max(data1.split[[rand.num]]$Nitrate),max(data1.split
 
 ## Depth and Level Corrections
 calculate the appropriate depth for each measurment using available daily level measurments. Use function "realdepth" and use closest day if no level measurment of that day is available.
-```{r echo=TRUE, warning=FALSE, message=FALSE}
+```{r level-depth correction, echo=TRUE, warning=FALSE, message=FALSE}
 # this block arranges the depth of the measurments according to the lake level during that day
 
 # initialize a data frame to accept the corrected data
@@ -165,7 +165,7 @@ data1.split.interp.depth[which(names(data1.split.interp.depth) %in% c(""))]=NULL
 ```
 
 ### demonstrate the results according to the new depth scale of randomly selected data
-```{r echo=FALSE, warning=FALSE, message=FALSE}
+```{r level-depth correction plots, echo=FALSE, warning=FALSE, message=FALSE}
 # choose a random number to demonstrate the interpolation
 rand.num=sample(1:length(data1.split),1)
 rand.date=as.character.Date(dates[rand.num])
@@ -193,7 +193,7 @@ legend(1.05*max(c(max(as.double(data1.split[[rand.num]]$Nitrate)),max(as.double(
 ## Quantify the data using lake hypsometric curve
 
 Quantify the amount of measured species using the hypsomentric curve of the lake using function "conctoquant". Multiply each depth value with its corresponding hypsometric value
-```{r echo=TRUE, warning=FALSE, message=FALSE}
+```{r quntification, echo=TRUE, warning=FALSE, message=FALSE}
 # this block calculates the total amount using the hypsometric curve of the lake
 
 # initialize a data frame to accept the corrected data
@@ -215,7 +215,7 @@ data1.split.depth.quant[which(names(data1.split.depth.quant) %in% c(""))]=NULL
 ```
 
 ### demonstrate the results according to the new depth scale of randomly selected data
-```{r echo=FALSE, warning=FALSE, message=FALSE}
+```{r quntification plots, echo=FALSE, warning=FALSE, message=FALSE}
 # choose a random number to demonstrate the interpolation
 rand.num=sample(1:length(data1.split),1)
 rand.date=as.character.Date(dates[rand.num])
@@ -244,10 +244,7 @@ legend(1.05*max(c((data1.split.depth.quant[[rand.num]]$Nitrate),max(data1.split.
 ```
 
 
-## Demonstrate some data features and calculate processes related parameters
-
-Quantify the amount of measured species using the hypsomentric curve of the lake using function "conctoquant". Multiply each depth value with its corresponding hypsometric value
-```{r echo=FALSE, warning=FALSE, message=FALSE}
+```{r data frame creation, echo=FALSE, warning=FALSE, message=FALSE}
 # this block 
 
 # create a dataframe based on interpolated data in list
@@ -264,12 +261,19 @@ data1.split.interp.depth.quant.df=temp.2
 #create a data frame where depth values are 1 to 40
 data1.split.interp.quant.df=data1.split.interp.depth.quant.df
 data1.split.interp.quant.df[["Depth"]]=rep(seq(from=1, to=40, by=1),length(data1.split.interp.quant.df[["Depth"]])/40)
+
+# calculate matching season for every measurment day
+day.season=data.frame(matrix(data=NA, ncol=2, nrow=length(data1.split.interp.quant.df)))
+day.season=daytoseason(input=data1.split.interp.quant.df$Date)
+
+data1.split.interp.quant.df=cbind(data1.split.interp.quant.df,day.season[,2:3])
+data1.split.interp.depth.quant.df=cbind(data1.split.interp.depth.quant.df,day.season[,2:3])
 ```
 
-## Create some time series plots to estimate depth-time processes
+## Time series plots
 
 the following plots provide some visual estimation of the data to visualize time-depth processes
-```{r echo=FALSE, warning=FALSE, message=FALSE}
+```{r time series visualization, echo=FALSE, warning=FALSE, message=FALSE}
 
 # create x (date) and y (depth) vectors for plots
 x= as.numeric(data1.split.interp.depth.quant.df$Date)
@@ -320,10 +324,10 @@ axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%m-%Y")
 
 
 ```
-## Create some time series depth cross sections
+## Time-depth cross sections
 
 the following plots provide some visual estimation of the data to visualize time-depth processes
-```{r echo=FALSE, warning=FALSE, message=FALSE}
+```{r time-depth sections, echo=FALSE, warning=FALSE, message=FALSE}
 
 # plot a section through the data
 x.depth=seq(from=5, to=40, by=5)
@@ -344,7 +348,7 @@ pox
 #initilize Nitrate plot
 depth.indices=which(match(data1.split.interp.quant.df$Depth,x.depth[1])==1)
 pnit=ggplot(data=data1.split.interp.quant.df[depth.indices,], aes(x=Date, y=Nitrate, colour=Depth))+geom_line()
-pnit=pnit+labs(title="Nitrate" ,x = "Month", y = "Oxygen[quant]")
+pnit=pnit+labs(title="Nitrate" ,x = "Month", y = "Nitrate[quant]")
 pnit=pnit+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
 pnit=pnit+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpoint = 20)
 
@@ -357,7 +361,7 @@ pnit
 #initilize NH4 plot
 depth.indices=which(match(data1.split.interp.quant.df$Depth,x.depth[1])==1)
 pnh4=ggplot(data=data1.split.interp.quant.df[depth.indices,], aes(x=Date, y=NH4, colour=Depth))+geom_line()
-pnh4=pnh4+labs(title="NH4" ,x = "Month", y = "Oxygen[quant]")
+pnh4=pnh4+labs(title="NH4" ,x = "Month", y = "NH4[quant]")
 pnh4=pnh4+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
 pnh4=pnh4+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpoint = 20)
 for (ii in 2:length(x.depth)){
@@ -368,17 +372,56 @@ pnh4
 
 ```
 
-## Create some correlation plots
+## Correlation plots
 
 the following plots provide some visual estimation of the data correlation
-```{r echo=FALSE, warning=FALSE, message=FALSE}
+```{r correlation plots, echo=FALSE, warning=FALSE, message=FALSE}
 
-d=ggplot(data=data1.split.interp.quant.df, aes(x=Oxygen, y=Nitrate, colour=Depth))+geom_point()
+d=ggplot(data=data1.split.interp.quant.df, aes(x=Oxygen, y=Nitrate, colour=Depth, shape=Season))+geom_point()
 d=d+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpoint = 20)
 d
 
-d=ggplot(data=data1.split.interp.quant.df, aes(x=Oxygen, y=Nitrate, colour=as.Date))+geom_point()
+
+d=ggplot(data=data1.split.interp.quant.df, aes(x=NH4, y=Nitrate, colour=Season_ind, shape=Season))+geom_point()
+d=d+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpoint = 2)
+d
+
+d=ggplot(data=data1.split.interp.quant.df, aes(x=NH4, y=Nitrate, colour=Depth, shape=Season))+geom_point()
 d=d+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpoint = 20)
 d
 
+```
+
+# Model fitting estimation
+nitrification and denitrification are modelled for the stratified lake conditions, and are mixed during winter. depth 10 m is used to estimate nitrification processes, and depth 30 m is used to estimate denitrification
+```{r parameter estimation, echo=FALSE, warning=FALSE, message=FALSE}
+x.depth=c(10,30)
+depth.for.model=vector(mode = "list", length=length(x.depth))
+
+for (ii in 1:length(x.depth)){
+  depth.indices=which(match(data1.split.interp.quant.df$Depth,x.depth[ii])==1)
+  depth.for.model[[x.depth[ii]]]=data1.split.interp.quant.df[depth.indices,]
+}
+# remove empty elements from list
+depth.for.model[which(names(depth.for.model) %in% c(""))]=NULL
+
+d=ggplot(data=as.data.frame(depth.for.model[[10]]), aes(x=Date, y=Nitrate, colour=Oxygen, shape=Season))+geom_point()
+d=d+scale_colour_gradient2(low = "blue",mid = "green" , high = "red", midpoint=(max(depth.for.model[[10]]$Oxygen)-min(depth.for.model[[10]]$Oxygen))/2)
+d=d+labs(title="Nitrate depth 10[m]" ,x = "Month", y = "Nitrate[quant]")+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
+d
+
+d=ggplot(data=as.data.frame(depth.for.model[[10]]), aes(x=Date, y=NH4, colour=Oxygen, shape=Season))+geom_point()
+d=d+scale_colour_gradient2(low = "blue", mid = "green" , high = "red", midpoint=(max(depth.for.model[[10]]$Oxygen)-min(depth.for.model[[10]]$Oxygen))/2)
+d=d+labs(title="NH4 depth 10[m]" ,x = "Month", y = "NH4[quant]")+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
+d
+
+d=ggplot(data=as.data.frame(depth.for.model[[30]]), aes(x=Date, y=Nitrate, colour=Oxygen, shape=Season))+geom_point()
+d=d+scale_colour_gradient2(low = "blue", mid = "green" , high = "red", midpoint=(max(depth.for.model[[30]]$Oxygen)-min(depth.for.model[[30]]$Oxygen))/2)
+d=d+labs(title="Nitrate depth 30[m]" ,x = "Month", y = "Nitrate[quant]")+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
+d
+
+d=ggplot(data=as.data.frame(depth.for.model[[30]]), aes(x=Date, y=NH4, colour=Oxygen, shape=Season))+geom_point()
+d=d+scale_colour_gradient2(low = "blue", mid = "green" , high = "red", midpoint=(max(depth.for.model[[30]]$Oxygen)-min(depth.for.model[[30]]$Oxygen))/2)
+d=d+labs(title="NH4 depth 30[m]" ,x = "Month", y = "NH4[quant]")+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
+d
 ```

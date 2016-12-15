@@ -43,7 +43,7 @@ daytoseason <-
     }
     df=cbind(input,season)
     colnames(df, do.NULL = TRUE, prefix = "col")
-    colnames(df) <- c("Date", "Season_name","Season_ind")
+    colnames(df) <- c("Date", "Season","Season_ind")
 
     return(df)
   }
