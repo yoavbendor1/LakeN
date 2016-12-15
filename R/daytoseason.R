@@ -27,6 +27,7 @@ daytoseason <-
 
     for (ii in 1:length(input)){
     # Convert dates from any year to 2012 dates
+    # use 2012 because it is a leap year
     d =as.Date(strftime(input[ii], format="2012-%m-%d"))
 
     temp.1=ifelse (d >= WS | d < SE, "Winter",

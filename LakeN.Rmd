@@ -2,7 +2,8 @@
 title: "LakeN"
 author: "Yoav Ben Dor"
 date: "6.12.2016"
-output: html_document
+output:
+  html_document: default
 ---
 
 ```{r setup, include=FALSE , root.dir="F:/MyDocuments/GIT/LakeN"}
@@ -13,6 +14,8 @@ source('depthinterp.R')
 source('realdepth.R')
 source('conctoquant.R')
 source('daytoseason.R')
+source('datesegmenter.R')
+
 
 setwd("F:/MyDocuments/GIT/LakeN")
 
@@ -403,25 +406,34 @@ for (ii in 1:length(x.depth)){
   depth.for.model[[x.depth[ii]]]=data1.split.interp.quant.df[depth.indices,]
 }
 # remove empty elements from list
-depth.for.model[which(names(depth.for.model) %in% c(""))]=NULL
+depth.for.model[sapply(depth.for.model, is.null)] =NULL
 
-d=ggplot(data=as.data.frame(depth.for.model[[10]]), aes(x=Date, y=Nitrate, colour=Oxygen, shape=Season))+geom_point()
-d=d+scale_colour_gradient2(low = "blue",mid = "green" , high = "red", midpoint=(max(depth.for.model[[10]]$Oxygen)-min(depth.for.model[[10]]$Oxygen))/2)
-d=d+labs(title="Nitrate depth 10[m]" ,x = "Month", y = "Nitrate[quant]")+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
+for (ii in 1:length(x.depth)){
+  findinterval(depth.for.model[[1]]
+  depth.for.model[[x.depth[ii]]]=data1.split.interp.quant.df[depth.indices,]
+}
+nh4.buildup=
+
+d=ggplot(data=as.data.frame(depth.for.model[[1]]), aes(x=Date, y=Nitrate, colour=Oxygen, shape=Season))+geom_point()
+
+d=d+scale_colour_gradient2(low = "blue",mid = "green" , high = "red", midpoint=(max(depth.for.model[[1]]$Oxygen)-min(depth.for.model[[1]]$Oxygen))/2)
+d=d+labs(title=paste("Nitrate depth:", x.depth[1],"[m]"),x = "Month", y = "Nitrate[quant]")+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
 d
 
-d=ggplot(data=as.data.frame(depth.for.model[[10]]), aes(x=Date, y=NH4, colour=Oxygen, shape=Season))+geom_point()
-d=d+scale_colour_gradient2(low = "blue", mid = "green" , high = "red", midpoint=(max(depth.for.model[[10]]$Oxygen)-min(depth.for.model[[10]]$Oxygen))/2)
-d=d+labs(title="NH4 depth 10[m]" ,x = "Month", y = "NH4[quant]")+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
+d=ggplot(data=as.data.frame(depth.for.model[[1]]), aes(x=Date, y=NH4, colour=Oxygen, shape=Season))+geom_point()
+
+d=d+scale_colour_gradient2(low = "blue", mid = "green" , high = "red", midpoint=(max(depth.for.model[[1]]$Oxygen)-min(depth.for.model[[1]]$Oxygen))/2)
+d=d+labs(title=paste("NH4 depth:", x.depth[1],"[m]") ,x = "Month", y = "NH4[quant]")+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
 d
 
-d=ggplot(data=as.data.frame(depth.for.model[[30]]), aes(x=Date, y=Nitrate, colour=Oxygen, shape=Season))+geom_point()
-d=d+scale_colour_gradient2(low = "blue", mid = "green" , high = "red", midpoint=(max(depth.for.model[[30]]$Oxygen)-min(depth.for.model[[30]]$Oxygen))/2)
-d=d+labs(title="Nitrate depth 30[m]" ,x = "Month", y = "Nitrate[quant]")+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
+d=ggplot(data=as.data.frame(depth.for.model[[2]]), aes(x=Date, y=Nitrate, colour=Oxygen, shape=Season))+geom_point()
+
+d=d+scale_colour_gradient2(low = "blue", mid = "green" , high = "red", midpoint=(max(depth.for.model[[2]]$Oxygen)-min(depth.for.model[[2]]$Oxygen))/2)
+d=d+labs(title=paste("Nitrate depth:", x.depth[2],"[m]") ,x = "Month", y = "Nitrate[quant]")+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
 d
 
-d=ggplot(data=as.data.frame(depth.for.model[[30]]), aes(x=Date, y=NH4, colour=Oxygen, shape=Season))+geom_point()
-d=d+scale_colour_gradient2(low = "blue", mid = "green" , high = "red", midpoint=(max(depth.for.model[[30]]$Oxygen)-min(depth.for.model[[30]]$Oxygen))/2)
-d=d+labs(title="NH4 depth 30[m]" ,x = "Month", y = "NH4[quant]")+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
+d=ggplot(data=as.data.frame(depth.for.model[[2]]), aes(x=Date, y=NH4, colour=Oxygen, shape=Season))+geom_point()
+d=d+scale_colour_gradient2(low = "blue", mid = "green" , high = "red", midpoint=(max(depth.for.model[[2]]$Oxygen)-min(depth.for.model[[2]]$Oxygen))/2)
+d=d+labs(title=paste("NH4 depth:", x.depth[2],"[m]") ,x = "Month", y = "NH4[quant]")+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
 d
 ```
