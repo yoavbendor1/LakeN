@@ -15,7 +15,10 @@ source('realdepth.R')
 source('conctoquant.R')
 source('daytoseason.R')
 source('datesegmenter.R')
-
+source('datedifference.R')
+source('yearsegmenter.R')
+source('yearassigner.R')
+source('fitequation.R')
 
 setwd("F:/MyDocuments/GIT/LakeN")
 
@@ -99,7 +102,7 @@ n.row.interp=40
 dates=as.Date(unique(data1$Date, incomparables = FALSE))
 
 # initialize an empty data frame for interpolation results
-data1.split.interp=vector("list", length(data1.split))
+data1.split.interp=vector("list", length=0)
 
 # run interpolation function for each element
 for (ii in 1:length(data1.split)){
@@ -150,8 +153,8 @@ calculate the appropriate depth for each measurment using available daily level 
 # this block arranges the depth of the measurments according to the lake level during that day
 
 # initialize a data frame to accept the corrected data
-data1.split.interp.depth=vector("list", length(data1.split.interp))
-data1.split.depth=vector("list", length(data1.split.interp))
+data1.split.interp.depth=vector("list", length=0)
+data1.split.depth=vector("list", length=0)
 
 # run depth correction function for each element
 for (ii in 1:length(dates)){
@@ -162,7 +165,7 @@ for (ii in 1:length(dates)){
   temp=realdepth(depth.date=data3, measurment.date=temp.date, input=data1.split[[temp.date]])
   data1.split.depth[[temp.date]]=data.frame(temp)
 }
-#remove any empty elemts of the list
+#remove any empty elemets of the list
 data1.split.depth[which(names(data1.split.depth) %in% c(""))]=NULL
 data1.split.interp.depth[which(names(data1.split.interp.depth) %in% c(""))]=NULL
 ```
@@ -200,8 +203,8 @@ Quantify the amount of measured species using the hypsomentric curve of the lake
 # this block calculates the total amount using the hypsometric curve of the lake
 
 # initialize a data frame to accept the corrected data
-data1.split.interp.depth.quant=vector("list", length(data1.split.interp.depth))
-data1.split.depth.quant=vector("list", length(data1.split.depth))
+data1.split.interp.depth.quant=vector("list", length=0)
+data1.split.depth.quant=vector("list", length=0)
 
 # run quantification function for each element
 for (ii in 1:length(dates)){
@@ -399,7 +402,7 @@ d
 nitrification and denitrification are modelled for the stratified lake conditions, and are mixed during winter. depth 10 m is used to estimate nitrification processes, and depth 30 m is used to estimate denitrification
 ```{r parameter estimation, echo=FALSE, warning=FALSE, message=FALSE}
 x.depth=c(10,30)
-depth.for.model=vector(mode = "list", length=length(x.depth))
+depth.for.model=vector(mode = "list", length=0)
 
 for (ii in 1:length(x.depth)){
   depth.indices=which(match(data1.split.interp.quant.df$Depth,x.depth[ii])==1)
@@ -409,20 +412,18 @@ for (ii in 1:length(x.depth)){
 depth.for.model[sapply(depth.for.model, is.null)] =NULL
 
 for (ii in 1:length(x.depth)){
-  findinterval(depth.for.model[[1]]
   depth.for.model[[x.depth[ii]]]=data1.split.interp.quant.df[depth.indices,]
 }
-nh4.buildup=
 
 d=ggplot(data=as.data.frame(depth.for.model[[1]]), aes(x=Date, y=Nitrate, colour=Oxygen, shape=Season))+geom_point()
 
-d=d+scale_colour_gradient2(low = "blue",mid = "green" , high = "red", midpoint=(max(depth.for.model[[1]]$Oxygen)-min(depth.for.model[[1]]$Oxygen))/2)
+d=d+scale_colour_gradient2(low = "blue",mid = "green" , high = "red", midpoint=(max(depth.for.model[[1]]$Oxygen)-min(depth.for.model[[1]]$Oxygen))/1)
 d=d+labs(title=paste("Nitrate depth:", x.depth[1],"[m]"),x = "Month", y = "Nitrate[quant]")+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
 d
 
 d=ggplot(data=as.data.frame(depth.for.model[[1]]), aes(x=Date, y=NH4, colour=Oxygen, shape=Season))+geom_point()
 
-d=d+scale_colour_gradient2(low = "blue", mid = "green" , high = "red", midpoint=(max(depth.for.model[[1]]$Oxygen)-min(depth.for.model[[1]]$Oxygen))/2)
+d=d+scale_colour_gradient2(low = "blue", mid = "green" , high = "red", midpoint=(max(depth.for.model[[1]]$Oxygen)-min(depth.for.model[[1]]$Oxygen))/1)
 d=d+labs(title=paste("NH4 depth:", x.depth[1],"[m]") ,x = "Month", y = "NH4[quant]")+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
 d
 
@@ -433,7 +434,117 @@ d=d+labs(title=paste("Nitrate depth:", x.depth[2],"[m]") ,x = "Month", y = "Nitr
 d
 
 d=ggplot(data=as.data.frame(depth.for.model[[2]]), aes(x=Date, y=NH4, colour=Oxygen, shape=Season))+geom_point()
+
 d=d+scale_colour_gradient2(low = "blue", mid = "green" , high = "red", midpoint=(max(depth.for.model[[2]]$Oxygen)-min(depth.for.model[[2]]$Oxygen))/2)
 d=d+labs(title=paste("NH4 depth:", x.depth[2],"[m]") ,x = "Month", y = "NH4[quant]")+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
 d
+```
+# simulate NH4 build-up in depth 30m in order to estimate reaction rate
+```{r parameter estimation, echo=FALSE, warning=FALSE, message=FALSE}
+# segment the data to model by dates
+# the dates will be segmented into a list containing the relevant dates for every year
+temp.30=datesegmenter( min.date=as.Date("2010-04-30"),max.date=as.Date("2010-12-01"), input=as.data.frame(depth.for.model[[2]]), first.data.col=3)
+# assign the year to each measurment
+temp2.30=yearassigner(input=temp.30)
+# split the data set into a year-based list
+temp3.30=split(temp2.30,f=temp2.30$Year)
+# find the time [in days] between measurments
+datedif.30=datedifference(temp3.30)
+
+# attach the data-difference vector to the list
+data.for.model.30=vector("list", length=0)
+names.30=names(temp3.30)
+
+for (ii in 1:length(temp3.30)){
+  data.for.model.30[[names.30[ii]]]=as.data.frame(cbind(temp3.30[[ii]],datedif.30[[2]][[ii]]))
+  names(data.for.model.30[[ii]])[names(data.for.model.30[[ii]]) == 'V1'] = 'Date_seq'
+}
+
+# remove empty elements from list
+data.for.model.30[sapply(data.for.model.30, is.null)] =NULL
+
+# create a dataframe based on the list for the model
+# load the first element of the list
+data.for.model.30.df=as.data.frame(data.for.model.30[[1]])
+temp.2=data.for.model.30[[1]]
+
+# load all other elements in a loop
+for (ii in 2:length(data.for.model.30)){
+  temp=as.data.frame(data.for.model.30[[ii]])
+  temp.2=rbind(temp.2,temp)
+}
+data.for.model.30.df=temp.2
+
+lm1.30.NH4=lm(temp3.30$'2010'$NH4~unlist(datedif.30[[2]]$'2010'))
+lm2.30.NH4=lm(temp3.30$'2011'$NH4~unlist(datedif.30[[2]]$'2011'))
+lm3.30.NH4=lm(temp3.30$'2012'$NH4~unlist(datedif.30[[2]]$'2012'))
+lm4.30.NH4=lm(temp3.30$'2013'$NH4~unlist(datedif.30[[2]]$'2013'))
+
+eq.1=fitequation(lm1.30.NH4)
+eq.2=fitequation(lm2.30.NH4)
+eq.3=fitequation(lm3.30.NH4)
+eq.4=fitequation(lm4.30.NH4)
+
+d=ggplot(data=data.for.model.30.df, aes(x=Date_seq, y=NH4, colour=Year))+geom_point()
+d=d+labs(title=paste("NH4 build-up depth:", x.depth[2],"[m]") ,x = "Days from measurment", y = "NH4[quant]")
+d=d+geom_smooth(method='lm')
+d=d+geom_text(x = 50, y = 6E+07, label = eq.1, parse = TRUE, colour="red")
+d=d+geom_text(x = 50, y = 5.5E+07, label = eq.2, parse = TRUE, colour="dark green")
+d=d+geom_text(x = 50, y = 5.0E+07, label = eq.3, parse = TRUE, colour="blue")
+d=d+geom_text(x = 50, y = 4.5E+07, label = eq.4, parse = TRUE, colour="purple")
+d
+
+```
+# simulate Nitrate build-up in depth 10m in order to estimate reaction rate
+```{r parameter estimation, echo=FALSE, warning=FALSE, message=FALSE}
+# segment the data to model by dates
+# the dates will be segmented into a list containing the relevant dates for every year
+temp.10=datesegmenter(min.date=as.Date("2010-11-01"), max.date=as.Date("2011-04-30"), input=as.data.frame(depth.for.model[[2]]), first.data.col=3)
+# assign the year to each measurment
+temp2.10=yearassigner(input=temp.10)
+# split the data set into a year-based list
+temp3.10=split(temp2.10,f=temp2.10$Year)
+# find the time [in days] between measurments
+datedif.10=datedifference(temp3.10)
+
+# attach the data-difference vector to the list
+data.for.model.10=vector("list", length=0)
+names.10=names(temp3.10)
+
+for (ii in 1:length(temp3.10)){
+  data.for.model.10[[names.10[ii]]]=as.data.frame(cbind(temp3.10[[ii]],datedif.10[[2]][[ii]]))
+  names(data.for.model.10[[ii]])[names(data.for.model.10[[ii]]) == 'V1'] = 'Date_seq'
+}
+
+# remove empty elements from list
+data.for.model.10[sapply(data.for.model.10, is.null)] =NULL
+
+# create a dataframe based on the list for the model
+# load the first element of the list
+data.for.model.10.df=as.data.frame(data.for.model.10[[1]])
+temp.2=data.for.model.10[[1]]
+
+# load all other elements in a loop
+for (ii in 2:length(data.for.model.10)){
+  temp=as.data.frame(data.for.model.10[[ii]])
+  temp.2=rbind(temp.2,temp)
+}
+data.for.model.10.df=temp.2
+
+lm1.10.Nitrate=lm(temp3.10$'2010'$Nitrate~unlist(datedif.10[[2]]$'2010'))
+lm2.10.Nitrate=lm(temp3.10$'2011'$Nitrate~unlist(datedif.10[[2]]$'2011'))
+lm3.10.Nitrate=lm(temp3.10$'2012'$Nitrate~unlist(datedif.10[[2]]$'2012'))
+
+eq.1=fitequation(lm1.10.Nitrate)
+eq.2=fitequation(lm2.10.Nitrate)
+eq.3=fitequation(lm3.10.Nitrate)
+
+d=ggplot(data=data.for.model.10.df, aes(x=Date_seq, y=Nitrate, colour=Year))+geom_point()
+d=d+labs(title=paste("Nitrate build-up depth:", x.depth[2],"[m]") ,x = "Days from measurment", y = "Nitrate[quant]")
+d=d+geom_smooth(method='lm')
+d=d+geom_text(x = 50, y = 6E+07, label = eq.1, parse = TRUE, colour="red")
+d=d+geom_text(x = 50, y = 5.5E+07, label = eq.2, parse = TRUE, colour="dark green")
+d=d+geom_text(x = 50, y = 5.0E+07, label = eq.3, parse = TRUE, colour="blue")
+d
+
 ```
