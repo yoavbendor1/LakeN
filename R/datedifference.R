@@ -2,24 +2,16 @@
 #'
 #' this function extracts a segment of a data set according to a selected date range
 #'
-#' @param     input    (-) input data list of data frame splitted into data frames by years
-#' @param     byyear    (-) specifiy if data spliting should be carried by year or by seasons, specified in num.season
-#' @param     num.season    (-) number of seasons to split the data to
-
+#' @param     input    (-) input data as list of data frame splitted into data frames by years
+#'
 #'
 #' @author Yoav BD
 #' @return Date_diff a list of vactros including the difference between dates and the sequence of accumulated time between dates
 
 datedifference <-
-  function(input, byyear=1, num.season=NA){
+  function(input){
 
-    if (byyear==1){
-    years=unique(format(names(input)))
-    }
-
-    if (byyear!=1){
-    years=num.season
-    }
+    years=names(input)
 
     # initialize the result vector
     Date_diff=vector("list", length=0)

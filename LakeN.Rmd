@@ -7,7 +7,7 @@ output:
   html_document: default
 ---
 
-```{r setup, include=FALSE , root.dir="F:/MyDocuments/GIT/LakeN"}
+```{r setup, echo=FALSE ,include=FALSE , root.dir="F:/MyDocuments/GIT/LakeN"}
 knitr::opts_chunk$set(echo = FALSE , warning=FALSE, message=FALSE)
 
 # at home
@@ -39,7 +39,7 @@ This model was written as a project for course 68806 Eco-hydrologic modelling wi
 This model illustrates the annual N cycle in a lake in northern Israel, and simulates the transitions from oxydized species into reduced species
 
 ### read the data and load relevant libraries
-```{r data read, echo=TRUE, warning=FALSE, message=FALSE}
+```{r data read, echo=FALSE, warning=FALSE, message=FALSE}
 # load relevant libraries
 library(plyr)
 library(zoo)
@@ -103,7 +103,7 @@ data1.split[which(names(data1.split) %in% c(""))]=NULL
 
 ## Interpolate the Data into 1 m Intervals
 Use the function "depthinterp"" to interpolate the data into uniform length for every 1 m
-```{r interpolation, echo=TRUE, warning=FALSE, message=FALSE}
+```{r interpolation, echo=FALSE, warning=FALSE, message=FALSE}
 
 #define matrix size requiered for interpolating the data
 n.col.interp=ncol(data1.split[[1]])
@@ -160,7 +160,7 @@ legend(1.05*as.double(max(c(max(data1.split[[rand.num]]$Nitrate),max(data1.split
 
 ## Depth and Level Corrections
 calculate the appropriate depth for each measurment using available daily level measurments. Use function "realdepth" and use closest day if no level measurment of that day is available.
-```{r level-depth correction, echo=TRUE, warning=FALSE, message=FALSE}
+```{r level-depth correction, echo=FALSE, warning=FALSE, message=FALSE}
 # this block arranges the depth of the measurments according to the lake level during that day
 
 # initialize a data frame to accept the corrected data
@@ -210,7 +210,7 @@ legend(1.05*max(c(max(as.double(data1.split[[rand.num]]$Nitrate)),max(as.double(
 ## Quantify the data using lake hypsometric curve
 
 Quantify the amount of measured species using the hypsomentric curve of the lake using function "conctoquant". Multiply each depth value with its corresponding hypsometric value
-```{r quntification, echo=TRUE, warning=FALSE, message=FALSE}
+```{r quntification, echo=FALSE, warning=FALSE, message=FALSE}
 # this block calculates the total amount using the hypsometric curve of the lake
 
 # initialize a data frame to accept the corrected data
@@ -341,6 +341,7 @@ axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%m-%Y")
 
 
 ```
+
 ## Time-depth cross sections
 
 the following plots provide some visual estimation of the data to visualize time-depth processes
@@ -392,26 +393,36 @@ pnh4
 ## Correlation plots
 
 the following plots provide some visual estimation of the data correlation
+
 ```{r correlation plots, echo=FALSE, warning=FALSE, message=FALSE}
 
 d=ggplot(data=data1.split.interp.quant.df, aes(x=Oxygen, y=Nitrate, colour=Depth, shape=Season))+geom_point()
 d=d+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpoint = 20)
+d=d+labs(title=paste("Nitrate vs. Oxygen"),x = "Oxygen [quant]", y = "Nitrate[quant]")
 d
 
+d=ggplot(data=data1.split.interp.quant.df, aes(x=Oxygen, y=NH4, colour=Depth, shape=Season))+geom_point()
+d=d+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpoint = 20)
+d=d+labs(title=paste("NH4 vs. Oxygen"),x = "Oxygen [quant]", y = "NH4[quant]")
+d
 
 d=ggplot(data=data1.split.interp.quant.df, aes(x=NH4, y=Nitrate, colour=Season_ind, shape=Season))+geom_point()
 d=d+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpoint = 2)
+d=d+labs(title=paste("Nitrate vs. NH4"),x = "Oxygen [quant]", y = "NH4[quant]")
 d
 
 d=ggplot(data=data1.split.interp.quant.df, aes(x=NH4, y=Nitrate, colour=Depth, shape=Season))+geom_point()
 d=d+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpoint = 20)
+d=d+labs(title=paste("Nitrate vs. NH4"),x = "Oxygen [quant]", y = "NH4[quant]")
 d
 
 ```
 
 # Model fitting estimation
+
 nitrification and denitrification are modelled for the stratified lake conditions, and are mixed during winter. depth 10 m is used to estimate nitrification processes, and depth 30 m is used to estimate denitrification
-```{r parameter estimation, echo=FALSE, warning=FALSE, message=FALSE}
+
+```{r parameter estimation1, echo=FALSE, warning=FALSE, message=FALSE}
 x.depth=c(10,30)
 depth.for.model=vector(mode = "list", length=0)
 
@@ -450,8 +461,10 @@ d=d+scale_colour_gradient2(low = "blue", mid = "green" , high = "red", midpoint=
 d=d+labs(title=paste("NH4 depth:", x.depth[2],"[m]") ,x = "Month", y = "NH4[quant]")+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
 d
 ```
-# simulate NH4 build-up in depth 30m in order to estimate reaction rate
-```{r parameter estimation, echo=FALSE, warning=FALSE, message=FALSE}
+
+# simulate NH4 build-up between May and December in 30m depth in order to estimate reaction rate
+
+```{r parameter estimation2, echo=FALSE, warning=FALSE, message=FALSE}
 # segment the data to model by dates
 # the dates will be segmented into a list containing the relevant dates for every year
 temp.30=datesegmenter( min.date=as.Date("2010-04-30"),max.date=as.Date("2010-12-01"), input=as.data.frame(depth.for.model[[2]]), first.data.col=3)
@@ -506,7 +519,9 @@ d=d+geom_text(x = 50, y = 4.5E+07, label = eq.4, parse = TRUE, colour="purple")
 d
 
 ```
-# simulate Nitrate build-up in depth 10m in order to estimate reaction rate
+
+# simulate Nitrate build-up between November and May in 10m depth in order to estimate reaction rate
+
 ```{r parameter estimation, echo=FALSE, warning=FALSE, message=FALSE}
 # segment the data to model by dates
 # the dates will be segmented into a list containing the relevant dates for every year
