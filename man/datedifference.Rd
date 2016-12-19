@@ -4,14 +4,10 @@
 \alias{datedifference}
 \title{date difference}
 \usage{
-datedifference(input, byyear = 1, num.season = NA)
+datedifference(input)
 }
 \arguments{
-\item{input}{(-) input data list of data frame splitted into data frames by years}
-
-\item{byyear}{(-) specifiy if data spliting should be carried by year or by seasons, specified in num.season}
-
-\item{num.season}{(-) number of seasons to split the data to}
+\item{input}{(-) input data as list of data frame splitted into data frames by years}
 }
 \value{
 Date_diff a list of vactros including the difference between dates and the sequence of accumulated time between dates
