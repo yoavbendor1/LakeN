@@ -3,13 +3,19 @@ title: "LakeN"
 author: "Yoav Ben Dor"
 date: "6.12.2016"
 output:
+  pdf_document: default
   html_document: default
 ---
 
 ```{r setup, include=FALSE , root.dir="F:/MyDocuments/GIT/LakeN"}
 knitr::opts_chunk$set(echo = FALSE , warning=FALSE, message=FALSE)
 
-setwd("F:/MyDocuments/GIT/LakeN/R")
+# at home
+#setwd("F:/MyDocuments/GIT/LakeN/R")
+
+# at HUJI
+setwd("C:/Users/user/Documents/LakeN/R")
+
 source('depthinterp.R')
 source('realdepth.R')
 source('conctoquant.R')
@@ -19,8 +25,13 @@ source('datedifference.R')
 source('yearsegmenter.R')
 source('yearassigner.R')
 source('fitequation.R')
+source('datesplitter.R')
+source('yearbyelement.R')
 
-setwd("F:/MyDocuments/GIT/LakeN")
+# at home
+# setwd("F:/MyDocuments/GIT/LakeN")
+# at HUJI
+setwd("C:/Users/user/Documents/LakeN")
 
 ```
 
@@ -502,8 +513,10 @@ d
 temp.10=datesegmenter(min.date=as.Date("2010-11-01"), max.date=as.Date("2011-04-30"), input=as.data.frame(depth.for.model[[2]]), first.data.col=3)
 # assign the year to each measurment
 temp2.10=yearassigner(input=temp.10)
-# split the data set into a year-based list
-temp3.10=split(temp2.10,f=temp2.10$Year)
+# split the data set into a "season-based" list
+temp3.10=datesplitter(temp2.10,min.date="2010-11-01",max.date="2011-05-01")
+# cahnge the year value by element name for following plotting with ggplot
+temp3.10=yearbyelement(input=temp3.10)
 # find the time [in days] between measurments
 datedif.10=datedifference(temp3.10)
 
@@ -531,20 +544,20 @@ for (ii in 2:length(data.for.model.10)){
 }
 data.for.model.10.df=temp.2
 
-lm1.10.Nitrate=lm(temp3.10$'2010'$Nitrate~unlist(datedif.10[[2]]$'2010'))
-lm2.10.Nitrate=lm(temp3.10$'2011'$Nitrate~unlist(datedif.10[[2]]$'2011'))
-lm3.10.Nitrate=lm(temp3.10$'2012'$Nitrate~unlist(datedif.10[[2]]$'2012'))
+lm1.10.Nitrate=lm(temp3.10$'2011'$Nitrate~unlist(datedif.10[[2]]$'2011'))
+lm2.10.Nitrate=lm(temp3.10$'2012'$Nitrate~unlist(datedif.10[[2]]$'2012'))
+lm3.10.Nitrate=lm(temp3.10$'2013'$Nitrate~unlist(datedif.10[[2]]$'2013'))
 
 eq.1=fitequation(lm1.10.Nitrate)
 eq.2=fitequation(lm2.10.Nitrate)
 eq.3=fitequation(lm3.10.Nitrate)
 
 d=ggplot(data=data.for.model.10.df, aes(x=Date_seq, y=Nitrate, colour=Year))+geom_point()
-d=d+labs(title=paste("Nitrate build-up depth:", x.depth[2],"[m]") ,x = "Days from measurment", y = "Nitrate[quant]")
+d=d+labs(title=paste("Nitrate build-up depth:", x.depth[1],"[m]") ,x = "Days from measurment", y = "Nitrate[quant]")
 d=d+geom_smooth(method='lm')
-d=d+geom_text(x = 50, y = 6E+07, label = eq.1, parse = TRUE, colour="red")
-d=d+geom_text(x = 50, y = 5.5E+07, label = eq.2, parse = TRUE, colour="dark green")
-d=d+geom_text(x = 50, y = 5.0E+07, label = eq.3, parse = TRUE, colour="blue")
+d=d+geom_text(x = 50, y = 4.5E+07, label = eq.1, parse = TRUE, colour="red")
+d=d+geom_text(x = 50, y = 4.0E+07, label = eq.2, parse = TRUE, colour="dark green")
+d=d+geom_text(x = 50, y = 3.5E+07, label = eq.3, parse = TRUE, colour="blue")
 d
 
 ```
