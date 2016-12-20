@@ -11,10 +11,10 @@ html_document: default
 knitr::opts_chunk$set(echo = FALSE , warning=FALSE, message=FALSE)
 
 # at home
-#setwd("F:/MyDocuments/GIT/LakeN/R")
+setwd("F:/MyDocuments/GIT/LakeN/R")
 
 # at HUJI
-setwd("C:/Users/user/Documents/LakeN/R")
+#setwd("C:/Users/user/Documents/LakeN/R")
 
 source('depthinterp.R')
 source('realdepth.R')
@@ -29,9 +29,9 @@ source('datesplitter.R')
 source('yearbyelement.R')
 
 # at home
-# setwd("F:/MyDocuments/GIT/LakeN")
+ setwd("F:/MyDocuments/GIT/LakeN")
 # at HUJI
-setwd("C:/Users/user/Documents/LakeN")
+#setwd("C:/Users/user/Documents/LakeN")
 
 ```
 
@@ -227,6 +227,7 @@ for (ii in 1:length(dates)){
   
   temp=conctoquant(hypso.curve=data2, input=data1.split.depth[[temp.date]])
   data1.split.depth.quant[[temp.date]]=data.frame(temp)
+
 }
 #remove any empty elemts of the list
 data1.split.interp.depth.quant[which(names(data1.split.interp.depth.quant) %in% c(""))]=NULL
@@ -264,8 +265,6 @@ legend(1.05*max(c((data1.split.depth.quant[[rand.num]]$Nitrate),max(data1.split.
 
 
 ```{r data frame creation, echo=FALSE, warning=FALSE, message=FALSE}
-# this block 
-
 # create a dataframe based on interpolated data in list
 # load the first element of the list
 data1.split.interp.depth.quant.df=as.data.frame(data1.split.interp.depth.quant[[1]])
@@ -284,12 +283,11 @@ for (ii in 2:length(data1.split.interp.depth.quant)){
 colnames(oxygen.concentration.interp)=c("Oxygen_conc")
 
 data1.split.interp.depth.quant.df=cbind(data1.split.interp.depth.quant.df,oxygen.concentration.interp)
-data1.split.interp.quant.df=cbind(data1.split.interp.quant.df,oxygen.concentration.interp)
-
 
 #create a data frame where depth values are 1 to 40
 data1.split.interp.quant.df=data1.split.interp.depth.quant.df
 data1.split.interp.quant.df[["Depth"]]=rep(seq(from=1, to=40, by=1),length(data1.split.interp.quant.df[["Depth"]])/40)
+data1.split.interp.quant.df=cbind(data1.split.interp.quant.df,oxygen.concentration.interp)
 
 # calculate matching season for every measurment day
 day.season=data.frame(matrix(data=NA, ncol=2, nrow=length(data1.split.interp.quant.df)))
@@ -505,7 +503,7 @@ d=d+labs(title=paste("NH4 depth:", x.depth[2],"[m]") ,x = "Month", y = "NH4[quan
 d
 ```
 
-# simulate NH4 build-up between May and December in 30m depth in order to estimate reaction rate
+### simulate NH4 build-up between May and December in 30m depth in order to estimate reaction rate
 
 ```{r parameter estimation2, echo=FALSE, warning=FALSE, message=FALSE}
 # segment the data to model by dates
@@ -562,7 +560,7 @@ d
 
 ```
 
-# simulate Nitrate build-up between November and May in 10m depth in order to estimate reaction rate
+### simulate Nitrate build-up between November and May in 10m depth in order to estimate reaction rate
 
 ```{r parameter estimation3, echo=FALSE, warning=FALSE, message=FALSE}
 # segment the data to model by dates
@@ -619,7 +617,7 @@ d
 
 ```
 
-coeffiecient assements for all depths
+### coeffiecients assement for all depths
 
 ```{r parameter estimation4, echo=FALSE, warning=FALSE, message=FALSE}
 
@@ -705,7 +703,7 @@ ll=seq(from=1, to=nrow(Nitrate.model.df), by=length(Nitrate.model[[1]]))
 
 ```
 
-```{r parameter estimation5, echo=FALSE, warning=FALSE, message=FALSE}
+```{r parameter estimation7, echo=FALSE, warning=FALSE, message=FALSE}
 R2=expression(R^{2})
 d=ggplot(Nitrate.model.df, aes(x=factor(as.integer(Depth)), y=r2, colour=Year))+geom_point()
 d=d+labs(title=paste("Nitrate Linear Modeling from:", min.date ,"to", max.date) ,x = "Depth", y = "r2")
@@ -723,7 +721,7 @@ d
 
 ```
 
-```{r parameter estimation4, echo=FALSE, warning=FALSE, message=FALSE}
+```{r parameter estimation6, echo=FALSE, warning=FALSE, message=FALSE}
 
 x.depth=seq(from=1, to=40, by=1)
 data.for.model=vector(mode = "list", length=0)
@@ -816,14 +814,15 @@ d=d+scale_x_discrete("Depth", breaks=seq(from=0, to=40, by=5))
 d=d+scale_y_discrete(R2, breaks=seq(0, to=1, by=0.05))
 d
 
-d=ggplot(NH4.model.df, aes(x=factor(as.integer(Depth)), y=r2, colour=factor(a)))+geom_point()
-d=d+labs(title=paste("NH4 Linear Modeling from:", min.date ,"to", max.date) ,x = "Depth", y = "r2")
-d=d+scale_x_discrete("Depth", breaks=seq(from=0, to=40, by=5))
-d=d+scale_y_discrete(R2, breaks=seq(0, to=1, by=0.05))
-col.breaks=factor(sort(as.integer(NH4.model.df$a)))
-col.breaks=col.breaks[as.integer(seq(from=1, to=160, length.out=5))]
-d=d+scale_color_discrete(name="a",breaks=c(col.breaks), labels=as.character(c(col.breaks)))
-d
+
+#d=ggplot(NH4.model.df, aes(x=factor(as.integer(Depth)), y=r2, colour=factor(a)))+geom_point()
+#d=d+labs(title=paste("NH4 Linear Modeling from:", min.date ,"to", max.date) ,x = "Depth", y = "r2")
+#d=d+scale_x_discrete("Depth", breaks=seq(from=0, to=40, by=5))
+#d=d+scale_y_discrete(R2, breaks=seq(0, to=1, by=0.05))
+#col.breaks=factor(sort(as.integer(NH4.model.df$a)))
+#col.breaks=col.breaks[as.integer(seq(from=1, to=160, length.out=5))]
+#d=d+scale_color_discrete(name="a",breaks=c(col.breaks), labels=as.character(c(col.breaks)))
+#d
 
 d=ggplot(NH4.model.df, aes(x=as.double(b), y=as.double(a), colour=r2, shape=Year))+geom_point()
 d=d+labs(title=paste("NH4 Linear Modeling from:", min.date ,"to", max.date) ,x = "b", y = "a")
