@@ -3,8 +3,8 @@ title: "LakeN"
 author: "Yoav Ben Dor"
 date: "6.12.2016"
 output:
-  pdf_document: default
-  html_document: default
+pdf_document: default
+html_document: default
 ---
 
 ```{r setup, echo=FALSE ,include=FALSE , root.dir="F:/MyDocuments/GIT/LakeN"}
@@ -277,11 +277,11 @@ for (ii in 2:length(data1.split.interp.depth.quant)){
   temp=as.data.frame(data1.split.interp.depth.quant[[ii]])
   temp.ox=as.data.frame(data1.split.interp.depth[[ii]]$Oxygen)
   colnames(temp.ox)=c("Oxygen")
-
+  
   data1.split.interp.depth.quant.df=rbind(data1.split.interp.depth.quant.df,temp)
   oxygen.concentration.interp=rbind(oxygen.concentration.interp,temp.ox)
 }
-  colnames(oxygen.concentration.interp)=c("Oxygen_conc")
+colnames(oxygen.concentration.interp)=c("Oxygen_conc")
 
 data1.split.interp.depth.quant.df=cbind(data1.split.interp.depth.quant.df,oxygen.concentration.interp)
 data1.split.interp.quant.df=cbind(data1.split.interp.quant.df,oxygen.concentration.interp)
@@ -378,7 +378,7 @@ pox=pox+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpo
 
 for (ii in 2:length(x.depth)){
   depth.indices=which(match(data1.split.interp.quant.df$Depth,x.depth[ii])==1)
-pox=pox+geom_line(data=data1.split.interp.quant.df[depth.indices,], aes(x=Date, y=Oxygen, colour=Depth))
+  pox=pox+geom_line(data=data1.split.interp.quant.df[depth.indices,], aes(x=Date, y=Oxygen, colour=Depth))
 }
 pox
 
@@ -391,7 +391,7 @@ pox=pox+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpo
 
 for (ii in 2:length(x.depth)){
   depth.indices=which(match(data1.split.interp.quant.df$Depth,x.depth[ii])==1)
-pox=pox+geom_line(data=data1.split.interp.quant.df[depth.indices,], aes(x=Date, y=Oxygen_conc, colour=Depth))
+  pox=pox+geom_line(data=data1.split.interp.quant.df[depth.indices,], aes(x=Date, y=Oxygen_conc, colour=Depth))
 }
 pox
 
@@ -405,7 +405,7 @@ pnit=pnit+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", mid
 
 for (ii in 2:length(x.depth)){
   depth.indices=which(match(data1.split.interp.quant.df$Depth,x.depth[ii])==1)
-pnit=pnit+geom_line(data=data1.split.interp.quant.df[depth.indices,], aes(x=Date, y=Nitrate, colour=Depth))
+  pnit=pnit+geom_line(data=data1.split.interp.quant.df[depth.indices,], aes(x=Date, y=Nitrate, colour=Depth))
 }
 pnit
 
@@ -417,7 +417,7 @@ pnh4=pnh4+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
 pnh4=pnh4+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpoint = 20)
 for (ii in 2:length(x.depth)){
   depth.indices=which(match(data1.split.interp.quant.df$Depth,x.depth[ii])==1)
-pnh4=pnh4+geom_line(data=data1.split.interp.quant.df[depth.indices,], aes(x=Date, y=NH4, colour=Depth))
+  pnh4=pnh4+geom_line(data=data1.split.interp.quant.df[depth.indices,], aes(x=Date, y=NH4, colour=Depth))
 }
 pnh4
 
@@ -530,11 +530,10 @@ for (ii in 1:length(temp3.30)){
 # remove empty elements from list
 data.for.model.30[sapply(data.for.model.30, is.null)] =NULL
 
-# create a dataframe based on the list for the model
+## create a dataframe based on the list for the model
 # load the first element of the list
 data.for.model.30.df=as.data.frame(data.for.model.30[[1]])
 temp.2=data.for.model.30[[1]]
-
 # load all other elements in a loop
 for (ii in 2:length(data.for.model.30)){
   temp=as.data.frame(data.for.model.30[[ii]])
@@ -565,7 +564,7 @@ d
 
 # simulate Nitrate build-up between November and May in 10m depth in order to estimate reaction rate
 
-```{r parameter estimation, echo=FALSE, warning=FALSE, message=FALSE}
+```{r parameter estimation3, echo=FALSE, warning=FALSE, message=FALSE}
 # segment the data to model by dates
 # the dates will be segmented into a list containing the relevant dates for every year
 # if the time span ranges acrros Jan 1st, be sure to change the year in the ma.date value
@@ -591,11 +590,10 @@ for (ii in 1:length(temp3.10)){
 # remove empty elements from list
 data.for.model.10[sapply(data.for.model.10, is.null)] =NULL
 
-# create a dataframe based on the list for the model
+## create a dataframe based on the list for the model
 # load the first element of the list
 data.for.model.10.df=as.data.frame(data.for.model.10[[1]])
 temp.2=data.for.model.10[[1]]
-
 # load all other elements in a loop
 for (ii in 2:length(data.for.model.10)){
   temp=as.data.frame(data.for.model.10[[ii]])
@@ -621,4 +619,217 @@ d
 
 ```
 
-# model
+coeffiecient assements for all depths
+
+```{r parameter estimation4, echo=FALSE, warning=FALSE, message=FALSE}
+
+x.depth=seq(from=1, to=40, by=1)
+data.for.model=vector(mode = "list", length=0)
+
+for (ii in 1:length(x.depth)){
+  depth.indices=which(match(data1.split.interp.quant.df$Depth,x.depth[ii])==1)
+  data.for.model[[x.depth[ii]]]=data1.split.interp.quant.df[depth.indices,]
+}
+# remove empty elements from list
+data.for.model[sapply(data.for.model, is.null)] =NULL
+
+#define min and max date for modelling
+min.date=as.Date("2010-11-01")
+max.date=as.Date("2011-04-30")
+
+# initialize empty lists for model parameters collection
+lm.Nitrate=vector("list", length=0)
+model.param=vector("list", length=0)
+Nitrate.model=vector("list", length=0)
+
+for (ii in 1:length(x.depth)){
+  temp=datesegmenter(min.date=min.date, max.date=max.date, input=as.data.frame(data.for.model[[x.depth[ii]]]), first.data.col=3)
+  
+  # assign the year to each measurment
+  temp2=yearassigner(input=temp)
+  
+  # split the data set into a "season-based" list
+  temp3=datesplitter(temp2,min.date=min.date,max.date=max.date)
+  
+  # cahnge the year value by element name for following plotting with ggplot
+  temp3=yearbyelement(input=temp3)
+  
+  # find the time [in days] between measurments
+  datedif=datedifference(temp3)
+  
+  # attach the data-difference vector to the list
+  data.for.model.loop=vector("list", length=0)
+  names=names(temp3)
+  
+  for (jj in 1:length(temp3)){
+    data.for.model.loop[[names[jj]]]=as.data.frame(cbind(temp3[[jj]],datedif[[2]][[jj]]))
+    names(data.for.model.loop[[jj]])[names(data.for.model.loop[[jj]]) == 'V1'] = 'Date_seq'
+  }
+  
+  # remove empty elements from list
+  data.for.model.loop[sapply(data.for.model.loop, is.null)] =NULL
+  
+  temp.names=names(temp3)
+  for (jj in 1:length(temp.names)){
+    lm.Nitrate[[temp.names[jj]]]=lm(temp3[[jj]]$Nitrate~unlist(datedif[[2]][[jj]]))
+    
+    a = format(coef(lm.Nitrate[[jj]])[1], digits = 2, scientific=TRUE)
+    b = format(coef(lm.Nitrate[[jj]])[2], digits = 2, scientific=TRUE)
+    r2 = format(summary(lm.Nitrate[[jj]])$r.squared, digits = 2)
+    
+    model.param[[temp.names[jj]]]=data.frame(ii,a,b,r2)
+    rownames(model.param[[temp.names[jj]]]) = ii
+    colnames(model.param[[temp.names[jj]]]) = c("Depth", "a", "b","r2")
+    model.param=yearbyelement(model.param)
+
+  }
+      model.param=yearbyelement(model.param)
+
+  Nitrate.model[[ii]]=model.param
+}
+
+
+temp.df=data.frame(matrix(data=NA, ncol=5, nrow=1))
+colnames(temp.df) = colnames((model.param[[temp.names[1]]]))
+Nitrate.model.df=data.frame(matrix(data=NA, ncol=5, nrow=40*3))
+colnames(Nitrate.model.df) = colnames((model.param[[temp.names[1]]]))
+ll=seq(from=1, to=nrow(Nitrate.model.df), by=length(Nitrate.model[[1]]))
+       
+       for (ii in 1:length(Nitrate.model)){
+         for (jj in 1:length(Nitrate.model[[ii]])){
+           temp.df=Nitrate.model[[ii]][[jj]]
+           Nitrate.model.df[ll[ii]+jj-1,1:5]=format(temp.df, digits=10)
+           Nitrate.model.df[ll[ii]+jj-1,5]=temp.df$Year
+         }
+       }
+
+```
+
+```{r parameter estimation5, echo=FALSE, warning=FALSE, message=FALSE}
+R2=expression(R^{2})
+d=ggplot(Nitrate.model.df, aes(x=factor(as.integer(Depth)), y=r2, colour=Year))+geom_point()
+d=d+labs(title=paste("Nitrate Linear Modeling from:", min.date ,"to", max.date) ,x = "Depth", y = "r2")
+d=d+scale_x_discrete("Depth", breaks=seq(from=0, to=40, by=5))
+d=d+scale_y_discrete(R2, breaks=seq(0, to=1, by=0.05))
+d
+
+
+d=ggplot(Nitrate.model.df, aes(x=as.double(b), y=as.double(a), colour=r2, shape=Year))+geom_point()
+d=d+labs(title=paste("Nitrate Linear Modeling from:", min.date ,"to", max.date) ,x = "b", y = "a")
+col.breaks=seq(from=0.4, to=max(as.double(Nitrate.model.df$r2)), by=0.05)
+d=d+scale_color_discrete(name=R2,breaks=c(col.breaks), labels=as.character(c(col.breaks)))
+d
+
+
+```
+
+```{r parameter estimation4, echo=FALSE, warning=FALSE, message=FALSE}
+
+x.depth=seq(from=1, to=40, by=1)
+data.for.model=vector(mode = "list", length=0)
+
+for (ii in 1:length(x.depth)){
+  depth.indices=which(match(data1.split.interp.quant.df$Depth,x.depth[ii])==1)
+  data.for.model[[x.depth[ii]]]=data1.split.interp.quant.df[depth.indices,]
+}
+# remove empty elements from list
+data.for.model[sapply(data.for.model, is.null)] =NULL
+
+#define min and max date for modelling
+min.date=as.Date("2010-04-30")
+max.date=as.Date("2010-12-01")
+
+# initialize empty lists for model parameters collection
+lm.NH4=vector("list", length=0)
+model.param=vector("list", length=0)
+NH4.model=vector("list", length=0)
+
+for (ii in 1:length(x.depth)){
+  temp=datesegmenter(min.date=min.date, max.date=max.date, input=as.data.frame(data.for.model[[x.depth[ii]]]), first.data.col=3)
+  
+  # assign the year to each measurment
+  temp2=yearassigner(input=temp)
+  
+  # split the data set into a "season-based" list
+  #temp3=datesplitter(temp2,min.date=min.date,max.date=max.date)
+  temp3=split(temp2,f=temp2$Year)
+  
+  # cahnge the year value by element name for following plotting with ggplot
+ # temp3=yearbyelement(input=temp3)
+  
+  # find the time [in days] between measurments
+  datedif=datedifference(temp3)
+  
+  # attach the data-difference vector to the list
+  data.for.model.loop=vector("list", length=0)
+  names=names(temp3)
+  
+  for (jj in 1:length(temp3)){
+    data.for.model.loop[[names[jj]]]=as.data.frame(cbind(temp3[[jj]],datedif[[2]][[jj]]))
+    names(data.for.model.loop[[jj]])[names(data.for.model.loop[[jj]]) == 'V1'] = 'Date_seq'
+  }
+  
+  # remove empty elements from list
+  data.for.model.loop[sapply(data.for.model.loop, is.null)] =NULL
+  
+  temp.names=names(temp3)
+  for (jj in 1:length(temp.names)){
+    lm.NH4[[temp.names[jj]]]=lm(temp3[[jj]]$NH4~unlist(datedif[[2]][[jj]]))
+    
+    a = format(coef(lm.NH4[[jj]])[1], digits = 2, scientific=TRUE)
+    b = format(coef(lm.NH4[[jj]])[2], digits = 2, scientific=TRUE)
+    r2 = format(summary(lm.NH4[[jj]])$r.squared, digits = 2)
+    
+    model.param[[temp.names[jj]]]=data.frame(ii,a,b,r2)
+    rownames(model.param[[temp.names[jj]]]) = ii
+    colnames(model.param[[temp.names[jj]]]) = c("Depth", "a", "b","r2")
+    model.param=yearbyelement(model.param)
+    
+  }
+  model.param=yearbyelement(model.param)
+  
+  NH4.model[[ii]]=model.param
+}
+
+
+temp.df=data.frame(matrix(data=NA, ncol=5, nrow=1))
+colnames(temp.df) = colnames((model.param[[temp.names[1]]]))
+NH4.model.df=data.frame(matrix(data=NA, ncol=5, nrow=40*4))
+colnames(NH4.model.df) = colnames((model.param[[temp.names[1]]]))
+ll=seq(from=1, to=nrow(NH4.model.df), by=length(NH4.model[[1]]))
+
+for (ii in 1:length(NH4.model)){
+  for (jj in 1:length(NH4.model[[ii]])){
+    temp.df=NH4.model[[ii]][[jj]]
+    NH4.model.df[ll[ii]+jj-1,1:5]=format(temp.df, digits=10)
+    NH4.model.df[ll[ii]+jj-1,5]=temp.df$Year
+  }
+}
+
+```
+
+```{r parameter estimation5, echo=FALSE, warning=FALSE, message=FALSE}
+R2=expression(R^{2})
+d=ggplot(NH4.model.df, aes(x=factor(as.integer(Depth)), y=r2, colour=Year))+geom_point()
+d=d+labs(title=paste("NH4 Linear Modeling from:", min.date ,"to", max.date) ,x = "Depth", y = "r2")
+d=d+scale_x_discrete("Depth", breaks=seq(from=0, to=40, by=5))
+d=d+scale_y_discrete(R2, breaks=seq(0, to=1, by=0.05))
+d
+
+d=ggplot(NH4.model.df, aes(x=factor(as.integer(Depth)), y=r2, colour=factor(a)))+geom_point()
+d=d+labs(title=paste("NH4 Linear Modeling from:", min.date ,"to", max.date) ,x = "Depth", y = "r2")
+d=d+scale_x_discrete("Depth", breaks=seq(from=0, to=40, by=5))
+d=d+scale_y_discrete(R2, breaks=seq(0, to=1, by=0.05))
+col.breaks=factor(sort(as.integer(NH4.model.df$a)))
+col.breaks=col.breaks[as.integer(seq(from=1, to=160, length.out=5))]
+d=d+scale_color_discrete(name="a",breaks=c(col.breaks), labels=as.character(c(col.breaks)))
+d
+
+d=ggplot(NH4.model.df, aes(x=as.double(b), y=as.double(a), colour=r2, shape=Year))+geom_point()
+d=d+labs(title=paste("NH4 Linear Modeling from:", min.date ,"to", max.date) ,x = "b", y = "a")
+col.breaks=seq(from=0.4, to=max(as.double(NH4.model.df$r2)), by=0.05)
+d=d+scale_color_discrete(name=R2,breaks=c(col.breaks), labels=as.character(c(col.breaks)))
+d
+
+
+```
