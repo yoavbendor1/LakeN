@@ -38,6 +38,8 @@ setwd("C:/Users/user/Documents/LakeN")
 This model was written as a project for course 68806 Eco-hydrologic modelling with R
 This model illustrates the annual N cycle in a lake in northern Israel, and simulates the transitions from oxydized species into reduced species
 
+# Data preparation
+
 ### read the data and load relevant libraries
 ```{r data read, echo=FALSE, warning=FALSE, message=FALSE}
 # load relevant libraries
@@ -266,14 +268,24 @@ legend(1.05*max(c((data1.split.depth.quant[[rand.num]]$Nitrate),max(data1.split.
 
 # create a dataframe based on interpolated data in list
 # load the first element of the list
-temp.2=as.data.frame(data1.split.interp.depth.quant[[1]])
+data1.split.interp.depth.quant.df=as.data.frame(data1.split.interp.depth.quant[[1]])
+oxygen.concentration.interp=as.data.frame(data1.split.interp.depth[[1]]$Oxygen)
+colnames(oxygen.concentration.interp)=c("Oxygen")
 
 # load all other elements in a loop
 for (ii in 2:length(data1.split.interp.depth.quant)){
   temp=as.data.frame(data1.split.interp.depth.quant[[ii]])
-  temp.2=rbind(temp.2,temp)
+  temp.ox=as.data.frame(data1.split.interp.depth[[ii]]$Oxygen)
+  colnames(temp.ox)=c("Oxygen")
+
+  data1.split.interp.depth.quant.df=rbind(data1.split.interp.depth.quant.df,temp)
+  oxygen.concentration.interp=rbind(oxygen.concentration.interp,temp.ox)
 }
-data1.split.interp.depth.quant.df=temp.2
+  colnames(oxygen.concentration.interp)=c("Oxygen_conc")
+
+data1.split.interp.depth.quant.df=cbind(data1.split.interp.depth.quant.df,oxygen.concentration.interp)
+data1.split.interp.quant.df=cbind(data1.split.interp.quant.df,oxygen.concentration.interp)
+
 
 #create a data frame where depth values are 1 to 40
 data1.split.interp.quant.df=data1.split.interp.depth.quant.df
@@ -308,6 +320,13 @@ dim(y)=c(40,length(y)/40)
 z= data1.split.interp.depth.quant.df$Oxygen
 dim(z)=c(40,length(z)/40)
 image2D(z,x,y, main="Oxygen [amount]",xlab='',ylab="depth [m]",ylim=rev(range(y)),xaxt="n")
+r <- as.POSIXct(range(data1.split.interp.depth.quant.df$Date), "weeks")
+axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%m-%Y")
+
+# plot Oxygen concentration values
+z=oxygen.concentration.interp
+z=matrix(as.matrix(oxygen.concentration.interp), nrow=40, ncol=nrow(z)/40)
+image2D(z,x,y, main="Oxygen [concentration]",xlab='',ylab="depth [m]",ylim=rev(range(y)),xaxt="n")
 r <- as.POSIXct(range(data1.split.interp.depth.quant.df$Date), "weeks")
 axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%m-%Y")
 
@@ -363,6 +382,20 @@ pox=pox+geom_line(data=data1.split.interp.quant.df[depth.indices,], aes(x=Date, 
 }
 pox
 
+#initilize Oxygen plot
+depth.indices=which(match(data1.split.interp.quant.df$Depth,x.depth[1])==1)
+pox=ggplot(data=data1.split.interp.quant.df[depth.indices,], aes(x=Date, y=Oxygen_conc, colour=Depth))+geom_line()
+pox=pox+labs(title="Oxygen" ,x = "Month", y = "Oxygen[conc]")
+pox=pox+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
+pox=pox+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpoint = 20)
+
+for (ii in 2:length(x.depth)){
+  depth.indices=which(match(data1.split.interp.quant.df$Depth,x.depth[ii])==1)
+pox=pox+geom_line(data=data1.split.interp.quant.df[depth.indices,], aes(x=Date, y=Oxygen_conc, colour=Depth))
+}
+pox
+
+
 #initilize Nitrate plot
 depth.indices=which(match(data1.split.interp.quant.df$Depth,x.depth[1])==1)
 pnit=ggplot(data=data1.split.interp.quant.df[depth.indices,], aes(x=Date, y=Nitrate, colour=Depth))+geom_line()
@@ -401,9 +434,19 @@ d=d+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpoint 
 d=d+labs(title=paste("Nitrate vs. Oxygen"),x = "Oxygen [quant]", y = "Nitrate[quant]")
 d
 
+d=ggplot(data=data1.split.interp.quant.df, aes(x=Oxygen_conc, y=Nitrate, colour=Depth, shape=Season))+geom_point()
+d=d+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpoint = 20)
+d=d+labs(title=paste("Nitrate vs. Oxygen"),x = "Oxygen [conc]", y = "Nitrate[quant]")
+d
+
 d=ggplot(data=data1.split.interp.quant.df, aes(x=Oxygen, y=NH4, colour=Depth, shape=Season))+geom_point()
 d=d+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpoint = 20)
 d=d+labs(title=paste("NH4 vs. Oxygen"),x = "Oxygen [quant]", y = "NH4[quant]")
+d
+
+d=ggplot(data=data1.split.interp.quant.df, aes(x=Oxygen_conc, y=NH4, colour=Depth, shape=Season))+geom_point()
+d=d+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpoint = 20)
+d=d+labs(title=paste("NH4 vs. Oxygen"),x = "Oxygen [conc]", y = "NH4[quant]")
 d
 
 d=ggplot(data=data1.split.interp.quant.df, aes(x=NH4, y=Nitrate, colour=Season_ind, shape=Season))+geom_point()
@@ -525,6 +568,7 @@ d
 ```{r parameter estimation, echo=FALSE, warning=FALSE, message=FALSE}
 # segment the data to model by dates
 # the dates will be segmented into a list containing the relevant dates for every year
+# if the time span ranges acrros Jan 1st, be sure to change the year in the ma.date value
 temp.10=datesegmenter(min.date=as.Date("2010-11-01"), max.date=as.Date("2011-04-30"), input=as.data.frame(depth.for.model[[2]]), first.data.col=3)
 # assign the year to each measurment
 temp2.10=yearassigner(input=temp.10)
@@ -576,3 +620,5 @@ d=d+geom_text(x = 50, y = 3.5E+07, label = eq.3, parse = TRUE, colour="blue")
 d
 
 ```
+
+# model

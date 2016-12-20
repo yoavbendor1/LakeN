@@ -20,6 +20,7 @@ only the data that falls into the required date range
 }
 \description{
 this function extracts a segment of a data set according to a selected date range
+if the time span ranges acrros Jan 1st, be sure to change the year in the ma.date value
 }
 \author{
 Yoav BD
