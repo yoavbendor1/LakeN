@@ -11,10 +11,10 @@ html_document: default
 knitr::opts_chunk$set(echo = FALSE , warning=FALSE, message=FALSE)
 
 # at home
-setwd("F:/MyDocuments/GIT/LakeN/R")
+#setwd("F:/MyDocuments/GIT/LakeN/R")
 
 # at HUJI
-#setwd("C:/Users/user/Documents/LakeN/R")
+setwd("C:/Users/user/Documents/LakeN/R")
 
 source('depthinterp.R')
 source('realdepth.R')
@@ -29,16 +29,35 @@ source('datesplitter.R')
 source('yearbyelement.R')
 
 # at home
- setwd("F:/MyDocuments/GIT/LakeN")
+ #setwd("F:/MyDocuments/GIT/LakeN")
 # at HUJI
-#setwd("C:/Users/user/Documents/LakeN")
+setwd("C:/Users/user/Documents/LakeN")
 
 ```
 
+# Introduction
 This model was written as a project for course 68806 Eco-hydrologic modelling with R
 This model illustrates the annual N cycle in a lake in northern Israel, and simulates the transitions from oxydized species into reduced species
 
+## Background
+Anthropogenic effects of the recent years has largely affected the nitrogen cycle during the last decades. Increased N inputs, primarily as river-born nitrate, originating in soils, encourage eutrophication, anoxic conditions and blooms of harmful algae, interrupting the ecological cycle.
+The nitrogen cycle includes several key processes, which include its cycling between several species and affect its bioavailability. Rivers are efficient N sinks, but in its inorganic forms, it is removed from the water through assimilation and adsorption onto sediments. In addition, the precipitation of organic N and denitrification are two major processes that remove N from the water.
+In the studied lake, an N-fixing algae of the cyanobacteria phylum appeared for the first time during the autumn of 1994. It reappears every year since that time, and was recently accompanied by another cyanobacteria specie since 2005. This dramatic change in lake ecology is the likely result of changes in the availability of water-soluble nutrients, which provided the N-fixing species with a relative ecological advantage.
+
+## N cycle in the studied lake
+
+Several key process dominate the N cycle of the studied lake. These include nitrification, denitrification and the fixing of atmospheric nitrogen. These three processes are biologically mediated, and their relative role in the transformation of one specie to another greatly depends on physical conditions including radiation and temperature as well as the chemical properties of the lake, which are largely dependent on its limnological cycle. The consideration of these parameters in a limnological perspective is essential for the consideration of the dominant processes and their ecological impact. These processes are briefly described in the section below:
+### Nitrification
+Nitrification includes the oxidation of ammonia into nitrite in a two-stage process mediated by the nitrosomonas bacteria followed by the oxidation of nitrate through the mediation of the nitrobacteria, that can be summarized as: $$NH_4^+ →NH_3→NO_2^-→NO_3$$
+
+This process largely depends on oxygen availability, ambient conditions and the size of bacterial populations. The process has been documented to be carried quickly into nitrate in some years, whereas in others the increase in nitrite preceded the transformation into nitrate by several days up to a couple of weeks.
+
+The nitrification takes places in oxic conditions, and largely depends on the mixing of the water column during the winter, and is halted in the hypolimnion during the well-stratified conditions that develop from spring to autumn. Nitrification is however possible still possible in the interface of the hypolimnion with the epilimnion, where dissolved oxygen is present to some extent. Nitrate concentrations are highest at the end of January after the mixing of the lake is most effective, as well as additions of from surface runoff. Correspondingly, nitrite and ammonium are low during this interval.
+
+
 # Data preparation
+
+The data is provided in discrete form of concentration measurments. The depths of the measurments are not constant, and the time intervals between measurments are also not constant, and range from several days to several weeks.
 
 ### read the data and load relevant libraries
 ```{r data read, echo=FALSE, warning=FALSE, message=FALSE}
@@ -104,7 +123,8 @@ data1.split[which(names(data1.split) %in% c(""))]=NULL
 ```
 
 ## Interpolate the Data into 1 m Intervals
-Use the function "depthinterp"" to interpolate the data into uniform length for every 1 m
+Use the function "depthinterp"" to interpolate the data into uniform length for every 1 m. This is essential for later calculating the volume of each depth interval and the mass of each N specie measured in this depth.
+
 ```{r interpolation, echo=FALSE, warning=FALSE, message=FALSE}
 
 #define matrix size requiered for interpolating the data
@@ -161,7 +181,8 @@ legend(1.05*as.double(max(c(max(data1.split[[rand.num]]$Nitrate),max(data1.split
 ```
 
 ## Depth and Level Corrections
-calculate the appropriate depth for each measurment using available daily level measurments. Use function "realdepth" and use closest day if no level measurment of that day is available.
+Calculate the appropriate depth for each measurment using available daily level measurments. Use function "realdepth" and use closest day if no level measurment of that day is available. This correction is essential for later calculation of depth to volume and concentration quantification of N species in the lake.
+
 ```{r level-depth correction, echo=FALSE, warning=FALSE, message=FALSE}
 # this block arranges the depth of the measurments according to the lake level during that day
 
@@ -211,7 +232,7 @@ legend(1.05*max(c(max(as.double(data1.split[[rand.num]]$Nitrate)),max(as.double(
 
 ## Quantify the data using lake hypsometric curve
 
-Quantify the amount of measured species using the hypsomentric curve of the lake using function "conctoquant". Multiply each depth value with its corresponding hypsometric value
+The use of concentrations has limitiations because it may enhance or demise a processes that is inhernently "mass-based".Quantify the amount of measured species using the hypsomentric curve of the lake using function "conctoquant". Multiply each depth value with its corresponding hypsometric value to  
 ```{r quntification, echo=FALSE, warning=FALSE, message=FALSE}
 # this block calculates the total amount using the hypsometric curve of the lake
 
@@ -232,6 +253,14 @@ for (ii in 1:length(dates)){
 #remove any empty elemts of the list
 data1.split.interp.depth.quant[which(names(data1.split.interp.depth.quant) %in% c(""))]=NULL
 data1.split.depth.quant[which(names(data1.split.depth.quant) %in% c(""))]=NULL
+
+km2=xlab=expression(Km^{2})
+
+xlab=paste("Area [",km2,"]", collapse=" ")
+
+plot(data2$SA,data2$WD,main=paste("Lake hypsometric curve"),ylab="Depth [m]", xlab=km2,
+     ylim=(range(data2$WD)), xlim=range(data2$SA))
+
 ```
 
 ### demonstrate the results according to the new depth scale of randomly selected data
@@ -299,7 +328,8 @@ data1.split.interp.depth.quant.df=cbind(data1.split.interp.depth.quant.df,day.se
 
 ## Time series plots
 
-the following plots provide some visual estimation of the data to visualize time-depth processes
+The following plots provide some visual estimation of the data to visualize time-depth processes for further considerations for the modelling of the processes
+
 ```{r time series visualization, echo=FALSE, warning=FALSE, message=FALSE}
 
 # create x (date) and y (depth) vectors for plots
@@ -361,7 +391,6 @@ axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%m-%Y")
 
 ## Time-depth cross sections
 
-the following plots provide some visual estimation of the data to visualize time-depth processes
 ```{r time-depth sections, echo=FALSE, warning=FALSE, message=FALSE}
 
 # plot a section through the data
@@ -423,7 +452,7 @@ pnh4
 
 ## Correlation plots
 
-the following plots provide some visual estimation of the data correlation
+The following plots provide some visual estimation of data correlation
 
 ```{r correlation plots, echo=FALSE, warning=FALSE, message=FALSE}
 
@@ -461,7 +490,7 @@ d
 
 # Model fitting estimation
 
-nitrification and denitrification are modelled for the stratified lake conditions, and are mixed during winter. depth 10 m is used to estimate nitrification processes, and depth 30 m is used to estimate denitrification
+Nitrification and denitrification are two oposing processes that take place in the present or absence of oxygen. They therefore develop in the upper (nitrification) and lower (denitrification) parts of the lake during episodes of a stratified water column. The model therefore relies on the assumprion that their development depends on the presence of oxygen and the time available for their accumulation. Lake mixing, which takes place during winter, disrupts thier build-up, and uniformly distribute them across the lake, and mixing propagates towards the lake bottom. These two proceeses (stratification and mixing)can be examined in detail in two representative depths of 10m (nitrification) and 30m (denitrification).
 
 ```{r parameter estimation1, echo=FALSE, warning=FALSE, message=FALSE}
 x.depth=c(10,30)
@@ -503,7 +532,70 @@ d=d+labs(title=paste("NH4 depth:", x.depth[2],"[m]") ,x = "Month", y = "NH4[quan
 d
 ```
 
-### simulate NH4 build-up between May and December in 30m depth in order to estimate reaction rate
+### Process rate estimation
+
+It can be observed from the figures presented above that nitrification is dominant in the upper portions of the lake (depicted for 10m depth), primarily between January and April, when the mixing of the lake decreases its content through a down-ward propagating mixing of the oxygenated epilimnion with the lower, oxygen-depleted hypolimnion. Ammonium, on the other hand, develops during the stratified lake conditions in its hypolimnion (depicted for depth 30 m), and peaks at the begining of May, right before the mixing of the lake reaches the deeper parts of the lake, denitrification is halted, and the deeper lake is oxygenated once more.
+
+Simulate Nitrate build-up between November $1^{st}$ and April $30^{st}$ in 10m depth in order to estimate processes rate
+
+```{r parameter estimation3, echo=FALSE, warning=FALSE, message=FALSE}
+# segment the data to model by dates
+# the dates will be segmented into a list containing the relevant dates for every year
+# if the time span ranges acrros Jan 1st, be sure to change the year in the ma.date value
+temp.10=datesegmenter(min.date=as.Date("2010-01-01"), max.date=as.Date("2010-03-30"), input=as.data.frame(depth.for.model[[2]]), first.data.col=3)
+# assign the year to each measurment
+temp2.10=yearassigner(input=temp.10)
+# split the data set into a "year-based" list
+temp3.10=split(temp2.10,f=temp2.10$Year)
+# split the data set into a "season-based" list
+#temp3.10=datesplitter(temp2.10,min.date="2010-11-01",max.date="2011-05-01")
+# cahnge the year value by element name for following plotting with ggplot
+#temp3.10=yearbyelement(input=temp3.10)
+# find the time [in days] between measurments
+datedif.10=datedifference(temp3.10)
+
+# attach the data-difference vector to the list
+data.for.model.10=vector("list", length=0)
+names.10=names(temp3.10)
+
+for (ii in 1:length(temp3.10)){
+  data.for.model.10[[names.10[ii]]]=as.data.frame(cbind(temp3.10[[ii]],datedif.10[[2]][[ii]]))
+  names(data.for.model.10[[ii]])[names(data.for.model.10[[ii]]) == 'V1'] = 'Date_seq'
+}
+
+# remove empty elements from list
+data.for.model.10[sapply(data.for.model.10, is.null)] =NULL
+
+## create a dataframe based on the list for the model
+# load the first element of the list
+data.for.model.10.df=as.data.frame(data.for.model.10[[1]])
+temp.2=data.for.model.10[[1]]
+# load all other elements in a loop
+for (ii in 2:length(data.for.model.10)){
+  temp=as.data.frame(data.for.model.10[[ii]])
+  temp.2=rbind(temp.2,temp)
+}
+data.for.model.10.df=temp.2
+
+lm1.10.Nitrate=lm(temp3.10$'2011'$Nitrate~unlist(datedif.10[[2]]$'2011'))
+lm2.10.Nitrate=lm(temp3.10$'2012'$Nitrate~unlist(datedif.10[[2]]$'2012'))
+lm3.10.Nitrate=lm(temp3.10$'2013'$Nitrate~unlist(datedif.10[[2]]$'2013'))
+
+eq.1=fitequation(lm1.10.Nitrate)
+eq.2=fitequation(lm2.10.Nitrate)
+eq.3=fitequation(lm3.10.Nitrate)
+
+d=ggplot(data=data.for.model.10.df, aes(x=Date_seq, y=Nitrate, colour=Year))+geom_point()
+d=d+labs(title=paste("Nitrate build-up depth:", x.depth[1],"[m]", "Janaury 1 to March 30") ,x = "Days from measurment", y = "Nitrate[quant]")
+d=d+geom_smooth(method='lm')
+d=d+geom_text(x = 20, y = 4.5E+07, label = eq.1, parse = TRUE, colour="red")
+d=d+geom_text(x = 20, y = 4.0E+07, label = eq.2, parse = TRUE, colour="dark green")
+d=d+geom_text(x = 20, y = 3.5E+07, label = eq.3, parse = TRUE, colour="blue")
+d
+
+```
+
+simulate NH4 build-up between April $30^{st}$ and December $1^{st}$ in 30m depth in order to estimate reaction rate
 
 ```{r parameter estimation2, echo=FALSE, warning=FALSE, message=FALSE}
 # segment the data to model by dates
@@ -550,74 +642,20 @@ eq.3=fitequation(lm3.30.NH4)
 eq.4=fitequation(lm4.30.NH4)
 
 d=ggplot(data=data.for.model.30.df, aes(x=Date_seq, y=NH4, colour=Year))+geom_point()
-d=d+labs(title=paste("NH4 build-up depth:", x.depth[2],"[m]") ,x = "Days from measurment", y = "NH4[quant]")
+d=d+labs(title=paste("NH4 build-up depth:", x.depth[2],"[m]", "April 30 to December 1") ,x = "Days from measurment", y = "NH4[quant]")
 d=d+geom_smooth(method='lm')
-d=d+geom_text(x = 50, y = 6E+07, label = eq.1, parse = TRUE, colour="red")
-d=d+geom_text(x = 50, y = 5.5E+07, label = eq.2, parse = TRUE, colour="dark green")
-d=d+geom_text(x = 50, y = 5.0E+07, label = eq.3, parse = TRUE, colour="blue")
-d=d+geom_text(x = 50, y = 4.5E+07, label = eq.4, parse = TRUE, colour="purple")
+d=d+geom_text(x = 50, y = 6.5E+07, label = eq.1, parse = TRUE, colour="red")
+d=d+geom_text(x = 50, y = 6.0E+07, label = eq.2, parse = TRUE, colour="dark green")
+d=d+geom_text(x = 50, y = 5.5E+07, label = eq.3, parse = TRUE, colour="blue")
+d=d+geom_text(x = 50, y = 5.0E+07, label = eq.4, parse = TRUE, colour="purple")
 d
 
 ```
 
-### simulate Nitrate build-up between November and May in 10m depth in order to estimate reaction rate
 
-```{r parameter estimation3, echo=FALSE, warning=FALSE, message=FALSE}
-# segment the data to model by dates
-# the dates will be segmented into a list containing the relevant dates for every year
-# if the time span ranges acrros Jan 1st, be sure to change the year in the ma.date value
-temp.10=datesegmenter(min.date=as.Date("2010-11-01"), max.date=as.Date("2011-04-30"), input=as.data.frame(depth.for.model[[2]]), first.data.col=3)
-# assign the year to each measurment
-temp2.10=yearassigner(input=temp.10)
-# split the data set into a "season-based" list
-temp3.10=datesplitter(temp2.10,min.date="2010-11-01",max.date="2011-05-01")
-# cahnge the year value by element name for following plotting with ggplot
-temp3.10=yearbyelement(input=temp3.10)
-# find the time [in days] between measurments
-datedif.10=datedifference(temp3.10)
+### Coeffiecients assement for all depths
 
-# attach the data-difference vector to the list
-data.for.model.10=vector("list", length=0)
-names.10=names(temp3.10)
-
-for (ii in 1:length(temp3.10)){
-  data.for.model.10[[names.10[ii]]]=as.data.frame(cbind(temp3.10[[ii]],datedif.10[[2]][[ii]]))
-  names(data.for.model.10[[ii]])[names(data.for.model.10[[ii]]) == 'V1'] = 'Date_seq'
-}
-
-# remove empty elements from list
-data.for.model.10[sapply(data.for.model.10, is.null)] =NULL
-
-## create a dataframe based on the list for the model
-# load the first element of the list
-data.for.model.10.df=as.data.frame(data.for.model.10[[1]])
-temp.2=data.for.model.10[[1]]
-# load all other elements in a loop
-for (ii in 2:length(data.for.model.10)){
-  temp=as.data.frame(data.for.model.10[[ii]])
-  temp.2=rbind(temp.2,temp)
-}
-data.for.model.10.df=temp.2
-
-lm1.10.Nitrate=lm(temp3.10$'2011'$Nitrate~unlist(datedif.10[[2]]$'2011'))
-lm2.10.Nitrate=lm(temp3.10$'2012'$Nitrate~unlist(datedif.10[[2]]$'2012'))
-lm3.10.Nitrate=lm(temp3.10$'2013'$Nitrate~unlist(datedif.10[[2]]$'2013'))
-
-eq.1=fitequation(lm1.10.Nitrate)
-eq.2=fitequation(lm2.10.Nitrate)
-eq.3=fitequation(lm3.10.Nitrate)
-
-d=ggplot(data=data.for.model.10.df, aes(x=Date_seq, y=Nitrate, colour=Year))+geom_point()
-d=d+labs(title=paste("Nitrate build-up depth:", x.depth[1],"[m]") ,x = "Days from measurment", y = "Nitrate[quant]")
-d=d+geom_smooth(method='lm')
-d=d+geom_text(x = 50, y = 4.5E+07, label = eq.1, parse = TRUE, colour="red")
-d=d+geom_text(x = 50, y = 4.0E+07, label = eq.2, parse = TRUE, colour="dark green")
-d=d+geom_text(x = 50, y = 3.5E+07, label = eq.3, parse = TRUE, colour="blue")
-d
-
-```
-
-### coeffiecients assement for all depths
+After consideration of the dominant processes that control nitrate and ammonium content in the lake, the following section provides an assesment of the processes and their fit to a linear model in each depth. The $R^2$ value can be used to asses the best fit of the model for each depth. It can be observed that nitrate buildup fits a linear model in most depths, although some intraannual changes illustrate the complexity of the system and its divergence from linearity. The coefficients of the model also show a wide range, and illustrate that the best $R^2$ values were found for the year 2012 (triangles) and values of ca. $a=5*10^6$ and $b=4*10^5$ that describe nitrate build up between Novemebr $1^{st}$ and April $31^{st}$ using the following equation: $$NO_3=5*10^6*t+4*10^5$$, where t is provided in days.
 
 ```{r parameter estimation4, echo=FALSE, warning=FALSE, message=FALSE}
 
@@ -632,8 +670,8 @@ for (ii in 1:length(x.depth)){
 data.for.model[sapply(data.for.model, is.null)] =NULL
 
 #define min and max date for modelling
-min.date=as.Date("2010-11-01")
-max.date=as.Date("2011-04-30")
+min.date=as.Date("2010-01-01")
+max.date=as.Date("2010-03-30")
 
 # initialize empty lists for model parameters collection
 lm.Nitrate=vector("list", length=0)
@@ -647,10 +685,11 @@ for (ii in 1:length(x.depth)){
   temp2=yearassigner(input=temp)
   
   # split the data set into a "season-based" list
-  temp3=datesplitter(temp2,min.date=min.date,max.date=max.date)
+    temp3=split(temp2,f=temp2$Year)
+ # temp3=datesplitter(temp2,min.date=min.date,max.date=max.date)
   
   # cahnge the year value by element name for following plotting with ggplot
-  temp3=yearbyelement(input=temp3)
+  #temp3=yearbyelement(input=temp3)
   
   # find the time [in days] between measurments
   datedif=datedifference(temp3)
@@ -671,9 +710,13 @@ for (ii in 1:length(x.depth)){
   for (jj in 1:length(temp.names)){
     lm.Nitrate[[temp.names[jj]]]=lm(temp3[[jj]]$Nitrate~unlist(datedif[[2]][[jj]]))
     
-    a = format(coef(lm.Nitrate[[jj]])[1], digits = 2, scientific=TRUE)
-    b = format(coef(lm.Nitrate[[jj]])[2], digits = 2, scientific=TRUE)
-    r2 = format(summary(lm.Nitrate[[jj]])$r.squared, digits = 2)
+    #a = format(coef(lm.Nitrate[[jj]])[1], digits = 2, scientific=TRUE)
+    #b = format(coef(lm.Nitrate[[jj]])[2], digits = 2, scientific=TRUE)
+    #r2 = format(summary(lm.Nitrate[[jj]])$r.squared, digits = 2)
+    
+    a = as.double(coef(lm.Nitrate[[jj]])[1])
+    b = as.double(coef(lm.Nitrate[[jj]])[2])
+    r2 = as.double(summary(lm.Nitrate[[jj]])$r.squared)
     
     model.param[[temp.names[jj]]]=data.frame(ii,a,b,r2)
     rownames(model.param[[temp.names[jj]]]) = ii
@@ -696,30 +739,34 @@ ll=seq(from=1, to=nrow(Nitrate.model.df), by=length(Nitrate.model[[1]]))
        for (ii in 1:length(Nitrate.model)){
          for (jj in 1:length(Nitrate.model[[ii]])){
            temp.df=Nitrate.model[[ii]][[jj]]
-           Nitrate.model.df[ll[ii]+jj-1,1:5]=format(temp.df, digits=10)
-           Nitrate.model.df[ll[ii]+jj-1,5]=temp.df$Year
+           Nitrate.model.df[ll[ii]+jj-1,1:5]=temp.df
          }
        }
 
+Nitrate.model.df$Year=as.double(Nitrate.model.df$Year)
+
+summary(Nitrate.model.df)
 ```
 
 ```{r parameter estimation7, echo=FALSE, warning=FALSE, message=FALSE}
 R2=expression(R^{2})
-d=ggplot(Nitrate.model.df, aes(x=factor(as.integer(Depth)), y=r2, colour=Year))+geom_point()
-d=d+labs(title=paste("Nitrate Linear Modeling from:", min.date ,"to", max.date) ,x = "Depth", y = "r2")
+d=ggplot(Nitrate.model.df, aes(x=factor(as.integer(Depth)), y=r2, colour=as.factor(Year)))+geom_point()
+d=d+labs(title=paste("Nitrate build-up Linear Modeling: Janaury 1 to March 30") ,x = "Depth", y = "r2")
 d=d+scale_x_discrete("Depth", breaks=seq(from=0, to=40, by=5))
-d=d+scale_y_discrete(R2, breaks=seq(0, to=1, by=0.05))
+d=d+scale_y_continuous(R2, breaks=seq(0, to=1, by=0.05))
+d=d+scale_color_discrete(name="Year")
 d
 
 
-d=ggplot(Nitrate.model.df, aes(x=as.double(b), y=as.double(a), colour=r2, shape=Year))+geom_point()
-d=d+labs(title=paste("Nitrate Linear Modeling from:", min.date ,"to", max.date) ,x = "b", y = "a")
-col.breaks=seq(from=0.4, to=max(as.double(Nitrate.model.df$r2)), by=0.05)
-d=d+scale_color_discrete(name=R2,breaks=c(col.breaks), labels=as.character(c(col.breaks)))
+d=ggplot(Nitrate.model.df, aes(x=as.double(b), y=as.double(a), colour=r2, shape=as.factor(Year)))+geom_point()
+d=d+labs(title=paste("Nitrate build-up Linear Modeling: Janaury 1 to March 30") ,x = "b", y = "a")
+d=d+scale_colour_gradient2(name=R2, low = "blue", mid = "green" , high = "red", midpoint=0.8)
+d=d+scale_shape_discrete(name="Year")
 d
-
 
 ```
+
+It can be observed that ammonium buildup does fit the linear model in most depths as nicely as nitrate. Intraannual changes are significatn, and once more illustrate the complexity of the system and its divergence from linearity. The coefficients of the model  show a slightly smaller range, and illustrate that the best $R^2$ values of ca. $a=5*10^6$ and $b=5*10^5$ that describe ammonium build up between April $30^{th}$ and December $1^{st}$ using the following equation: $$NH_4=5*10^6t+5*10^5$$, where t is provided in days. Unsurprisingly, the model has the best fit for depths of 20 to 35m, where oxygenation is solely depends on annual stratification and monomictic mixing.
 
 ```{r parameter estimation6, echo=FALSE, warning=FALSE, message=FALSE}
 
@@ -774,9 +821,13 @@ for (ii in 1:length(x.depth)){
   for (jj in 1:length(temp.names)){
     lm.NH4[[temp.names[jj]]]=lm(temp3[[jj]]$NH4~unlist(datedif[[2]][[jj]]))
     
-    a = format(coef(lm.NH4[[jj]])[1], digits = 2, scientific=TRUE)
-    b = format(coef(lm.NH4[[jj]])[2], digits = 2, scientific=TRUE)
-    r2 = format(summary(lm.NH4[[jj]])$r.squared, digits = 2)
+    #a = format(coef(lm.NH4[[jj]])[1], digits = 2, scientific=TRUE)
+    #b = format(coef(lm.NH4[[jj]])[2], digits = 2, scientific=TRUE)
+    #r2 = format(summary(lm.NH4[[jj]])$r.squared, digits = 2)
+    
+    a = as.double(coef(lm.NH4[[jj]])[1])
+    b = as.double(coef(lm.NH4[[jj]])[2])
+    r2 = as.double(summary(lm.NH4[[jj]])$r.squared)
     
     model.param[[temp.names[jj]]]=data.frame(ii,a,b,r2)
     rownames(model.param[[temp.names[jj]]]) = ii
@@ -799,35 +850,28 @@ ll=seq(from=1, to=nrow(NH4.model.df), by=length(NH4.model[[1]]))
 for (ii in 1:length(NH4.model)){
   for (jj in 1:length(NH4.model[[ii]])){
     temp.df=NH4.model[[ii]][[jj]]
-    NH4.model.df[ll[ii]+jj-1,1:5]=format(temp.df, digits=10)
-    NH4.model.df[ll[ii]+jj-1,5]=temp.df$Year
+    NH4.model.df[ll[ii]+jj-1,1:5]=temp.df
   }
 }
 
+NH4.model.df$Year=as.double(NH4.model.df$Year)
+summary(NH4.model.df)
 ```
 
 ```{r parameter estimation5, echo=FALSE, warning=FALSE, message=FALSE}
 R2=expression(R^{2})
-d=ggplot(NH4.model.df, aes(x=factor(as.integer(Depth)), y=r2, colour=Year))+geom_point()
-d=d+labs(title=paste("NH4 Linear Modeling from:", min.date ,"to", max.date) ,x = "Depth", y = "r2")
+d=ggplot(NH4.model.df, aes(x=factor(as.integer(Depth)), y=r2, colour=as.factor(Year)))+geom_point()
+d=d+labs(title=paste("NH4 build-up Linear Modeling: April 30 to December 1") ,x = "Depth", y = "r2")
 d=d+scale_x_discrete("Depth", breaks=seq(from=0, to=40, by=5))
-d=d+scale_y_discrete(R2, breaks=seq(0, to=1, by=0.05))
+d=d+scale_y_continuous(R2, breaks=seq(0, to=1, by=0.1))
+d=d+scale_color_discrete(name="Year")
 d
 
 
-#d=ggplot(NH4.model.df, aes(x=factor(as.integer(Depth)), y=r2, colour=factor(a)))+geom_point()
-#d=d+labs(title=paste("NH4 Linear Modeling from:", min.date ,"to", max.date) ,x = "Depth", y = "r2")
-#d=d+scale_x_discrete("Depth", breaks=seq(from=0, to=40, by=5))
-#d=d+scale_y_discrete(R2, breaks=seq(0, to=1, by=0.05))
-#col.breaks=factor(sort(as.integer(NH4.model.df$a)))
-#col.breaks=col.breaks[as.integer(seq(from=1, to=160, length.out=5))]
-#d=d+scale_color_discrete(name="a",breaks=c(col.breaks), labels=as.character(c(col.breaks)))
-#d
-
-d=ggplot(NH4.model.df, aes(x=as.double(b), y=as.double(a), colour=r2, shape=Year))+geom_point()
-d=d+labs(title=paste("NH4 Linear Modeling from:", min.date ,"to", max.date) ,x = "b", y = "a")
-col.breaks=seq(from=0.4, to=max(as.double(NH4.model.df$r2)), by=0.05)
-d=d+scale_color_discrete(name=R2,breaks=c(col.breaks), labels=as.character(c(col.breaks)))
+d=ggplot(NH4.model.df, aes(x=as.double(b), y=as.double(a), colour=r2, shape=as.factor(Year)))+geom_point()
+d=d+labs(title=paste("NH4 build-up Linear Modeling: April 30 to December 1") ,x = "b", y = "a")
+d=d+scale_colour_gradient2(name=R2, low = "blue", mid = "green" , high = "red", midpoint=0.5)
+d=d+scale_shape_discrete(name="Year")
 d
 
 
