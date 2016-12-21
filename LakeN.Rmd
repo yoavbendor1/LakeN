@@ -2,12 +2,10 @@
 title: "LakeN"
 author: "Yoav Ben Dor"
 date: "6.12.2016"
-output:
-pdf_document: default
-html_document: default
+output: pdf_document
 ---
 
-```{r setup, echo=FALSE ,include=FALSE , root.dir="F:/MyDocuments/GIT/LakeN"}
+```{r setup, echo=FALSE ,include=FALSE , root.dir="F:/MyDocuments/GIT/LakeN", out.width = '600px', out.height = '300px'}
 knitr::opts_chunk$set(echo = FALSE , warning=FALSE, message=FALSE)
 
 # at home
@@ -47,7 +45,9 @@ In the studied lake, an N-fixing algae of the cyanobacteria phylum appeared for 
 ## N cycle in the studied lake
 
 Several key process dominate the N cycle of the studied lake. These include nitrification, denitrification and the fixing of atmospheric nitrogen. These three processes are biologically mediated, and their relative role in the transformation of one specie to another greatly depends on physical conditions including radiation and temperature as well as the chemical properties of the lake, which are largely dependent on its limnological cycle. The consideration of these parameters in a limnological perspective is essential for the consideration of the dominant processes and their ecological impact. These processes are briefly described in the section below:
+
 ### Nitrification
+
 Nitrification includes the oxidation of ammonia into nitrite in a two-stage process mediated by the nitrosomonas bacteria followed by the oxidation of nitrate through the mediation of the nitrobacteria, that can be summarized as: $$NH_4^+ →NH_3→NO_2^-→NO_3$$
 
 This process largely depends on oxygen availability, ambient conditions and the size of bacterial populations. The process has been documented to be carried quickly into nitrate in some years, whereas in others the increase in nitrite preceded the transformation into nitrate by several days up to a couple of weeks.
@@ -60,7 +60,8 @@ The nitrification takes places in oxic conditions, and largely depends on the mi
 The data is provided in discrete form of concentration measurments. The depths of the measurments are not constant, and the time intervals between measurments are also not constant, and range from several days to several weeks.
 
 ### read the data and load relevant libraries
-```{r data read, echo=FALSE, warning=FALSE, message=FALSE}
+
+```{r data read, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 # load relevant libraries
 library(plyr)
 library(zoo)
@@ -68,6 +69,7 @@ library(dplyr)
 library(LakeN)
 library(plot3D)
 library(ggplot2)
+library(png)
 
 # read the data for the model
 # use the read.table function in the cas of a tab=delimited text file
@@ -123,9 +125,10 @@ data1.split[which(names(data1.split) %in% c(""))]=NULL
 ```
 
 ## Interpolate the Data into 1 m Intervals
+
 Use the function "depthinterp"" to interpolate the data into uniform length for every 1 m. This is essential for later calculating the volume of each depth interval and the mass of each N specie measured in this depth.
 
-```{r interpolation, echo=FALSE, warning=FALSE, message=FALSE}
+```{r interpolation, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 
 #define matrix size requiered for interpolating the data
 n.col.interp=ncol(data1.split[[1]])
@@ -149,7 +152,8 @@ data1.split.interp[which(names(data1.split.interp) %in% c(""))]=NULL
 
 
 ### Demonstrate interpolations of randomly selected data
-```{r interpolation plots, echo=FALSE, warning=FALSE, message=FALSE}
+
+```{r interpolation plots, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 # choose a random number to demonstrate the interpolation
 rand.num=sample(1:length(data1.split),1)
 rand.date=as.character.Date(dates[rand.num])
@@ -183,7 +187,7 @@ legend(1.05*as.double(max(c(max(data1.split[[rand.num]]$Nitrate),max(data1.split
 ## Depth and Level Corrections
 Calculate the appropriate depth for each measurment using available daily level measurments. Use function "realdepth" and use closest day if no level measurment of that day is available. This correction is essential for later calculation of depth to volume and concentration quantification of N species in the lake.
 
-```{r level-depth correction, echo=FALSE, warning=FALSE, message=FALSE}
+```{r level-depth correction, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 # this block arranges the depth of the measurments according to the lake level during that day
 
 # initialize a data frame to accept the corrected data
@@ -205,7 +209,7 @@ data1.split.interp.depth[which(names(data1.split.interp.depth) %in% c(""))]=NULL
 ```
 
 ### demonstrate the results according to the new depth scale of randomly selected data
-```{r level-depth correction plots, echo=FALSE, warning=FALSE, message=FALSE}
+```{r level-depth correction plots, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 # choose a random number to demonstrate the interpolation
 rand.num=sample(1:length(data1.split),1)
 rand.date=as.character.Date(dates[rand.num])
@@ -233,7 +237,7 @@ legend(1.05*max(c(max(as.double(data1.split[[rand.num]]$Nitrate)),max(as.double(
 ## Quantify the data using lake hypsometric curve
 
 The use of concentrations has limitiations because it may enhance or demise a processes that is inhernently "mass-based".Quantify the amount of measured species using the hypsomentric curve of the lake using function "conctoquant". Multiply each depth value with its corresponding hypsometric value to  
-```{r quntification, echo=FALSE, warning=FALSE, message=FALSE}
+```{r quntification, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 # this block calculates the total amount using the hypsometric curve of the lake
 
 # initialize a data frame to accept the corrected data
@@ -264,7 +268,7 @@ plot(data2$SA,data2$WD,main=paste("Lake hypsometric curve"),ylab="Depth [m]", xl
 ```
 
 ### demonstrate the results according to the new depth scale of randomly selected data
-```{r quntification plots, echo=FALSE, warning=FALSE, message=FALSE}
+```{r quntification plots, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 # choose a random number to demonstrate the interpolation
 rand.num=sample(1:length(data1.split),1)
 rand.date=as.character.Date(dates[rand.num])
@@ -293,7 +297,7 @@ legend(1.05*max(c((data1.split.depth.quant[[rand.num]]$Nitrate),max(data1.split.
 ```
 
 
-```{r data frame creation, echo=FALSE, warning=FALSE, message=FALSE}
+```{r data frame creation, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 # create a dataframe based on interpolated data in list
 # load the first element of the list
 data1.split.interp.depth.quant.df=as.data.frame(data1.split.interp.depth.quant[[1]])
@@ -330,7 +334,7 @@ data1.split.interp.depth.quant.df=cbind(data1.split.interp.depth.quant.df,day.se
 
 The following plots provide some visual estimation of the data to visualize time-depth processes for further considerations for the modelling of the processes
 
-```{r time series visualization, echo=FALSE, warning=FALSE, message=FALSE}
+```{r time series visualization, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 
 # create x (date) and y (depth) vectors for plots
 x= as.numeric(data1.split.interp.depth.quant.df$Date)
@@ -391,7 +395,7 @@ axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%m-%Y")
 
 ## Time-depth cross sections
 
-```{r time-depth sections, echo=FALSE, warning=FALSE, message=FALSE}
+```{r time-depth sections, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 
 # plot a section through the data
 x.depth=seq(from=5, to=40, by=5)
@@ -454,7 +458,7 @@ pnh4
 
 The following plots provide some visual estimation of data correlation
 
-```{r correlation plots, echo=FALSE, warning=FALSE, message=FALSE}
+```{r correlation plots, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 
 d=ggplot(data=data1.split.interp.quant.df, aes(x=Oxygen, y=Nitrate, colour=Depth, shape=Season))+geom_point()
 d=d+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpoint = 20)
@@ -492,7 +496,7 @@ d
 
 Nitrification and denitrification are two oposing processes that take place in the present or absence of oxygen. They therefore develop in the upper (nitrification) and lower (denitrification) parts of the lake during episodes of a stratified water column. The model therefore relies on the assumprion that their development depends on the presence of oxygen and the time available for their accumulation. Lake mixing, which takes place during winter, disrupts thier build-up, and uniformly distribute them across the lake, and mixing propagates towards the lake bottom. These two proceeses (stratification and mixing)can be examined in detail in two representative depths of 10m (nitrification) and 30m (denitrification).
 
-```{r parameter estimation1, echo=FALSE, warning=FALSE, message=FALSE}
+```{r visual estimation of seasonal variations, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 x.depth=c(10,30)
 depth.for.model=vector(mode = "list", length=0)
 
@@ -538,7 +542,7 @@ It can be observed from the figures presented above that nitrification is domina
 
 Simulate Nitrate build-up between November $1^{st}$ and April $30^{st}$ in 10m depth in order to estimate processes rate
 
-```{r parameter estimation3, echo=FALSE, warning=FALSE, message=FALSE}
+```{r nitrate modelling, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 # segment the data to model by dates
 # the dates will be segmented into a list containing the relevant dates for every year
 # if the time span ranges acrros Jan 1st, be sure to change the year in the ma.date value
@@ -597,7 +601,7 @@ d
 
 simulate NH4 build-up between April $30^{st}$ and December $1^{st}$ in 30m depth in order to estimate reaction rate
 
-```{r parameter estimation2, echo=FALSE, warning=FALSE, message=FALSE}
+```{r NH4 modelling, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 # segment the data to model by dates
 # the dates will be segmented into a list containing the relevant dates for every year
 temp.30=datesegmenter( min.date=as.Date("2010-04-30"),max.date=as.Date("2010-12-01"), input=as.data.frame(depth.for.model[[2]]), first.data.col=3)
@@ -657,7 +661,7 @@ d
 
 After consideration of the dominant processes that control nitrate and ammonium content in the lake, the following section provides an assesment of the processes and their fit to a linear model in each depth. The $R^2$ value can be used to asses the best fit of the model for each depth. It can be observed that nitrate buildup fits a linear model in most depths, although some intraannual changes illustrate the complexity of the system and its divergence from linearity. The coefficients of the model also show a wide range, and illustrate that the best $R^2$ values were found for the year 2012 (triangles) and values of ca. $a=5*10^6$ and $b=4*10^5$ that describe nitrate build up between Novemebr $1^{st}$ and April $31^{st}$ using the following equation: $$NO_3=5*10^6*t+4*10^5$$, where t is provided in days.
 
-```{r parameter estimation4, echo=FALSE, warning=FALSE, message=FALSE}
+```{r Nitrate modelling all depths, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 
 x.depth=seq(from=1, to=40, by=1)
 data.for.model=vector(mode = "list", length=0)
@@ -745,10 +749,10 @@ ll=seq(from=1, to=nrow(Nitrate.model.df), by=length(Nitrate.model[[1]]))
 
 Nitrate.model.df$Year=as.double(Nitrate.model.df$Year)
 
-summary(Nitrate.model.df)
+summary(Nitrate.model.df[,1:4])
 ```
 
-```{r parameter estimation7, echo=FALSE, warning=FALSE, message=FALSE}
+```{r Nitrate parameter presentation, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 R2=expression(R^{2})
 d=ggplot(Nitrate.model.df, aes(x=factor(as.integer(Depth)), y=r2, colour=as.factor(Year)))+geom_point()
 d=d+labs(title=paste("Nitrate build-up Linear Modeling: Janaury 1 to March 30") ,x = "Depth", y = "r2")
@@ -764,11 +768,28 @@ d=d+scale_colour_gradient2(name=R2, low = "blue", mid = "green" , high = "red", 
 d=d+scale_shape_discrete(name="Year")
 d
 
+d=d+scale_x_continuous(limits=c(0,6E5))
+d=d+scale_y_continuous(limits=c(0,0.5E7))
+d
+
+d=ggplot(Nitrate.model.df, aes(x=as.factor(Year), y=as.double(a), colour=as.factor(Year)))+geom_boxplot()
+d=d+labs(title=paste("a parameter for Nitrate build-up: Janaury 1 to March 30") ,x = "Year", y = "a")
+d=d+scale_colour_discrete(name="Year")
+d
+
+d=d+scale_y_continuous(limits=c(0,0.5E7))
+d
+
+d=ggplot(Nitrate.model.df, aes(x=as.factor(Year), y=as.double(b), colour=as.factor(Year)))+geom_boxplot()
+d=d+labs(title=paste("b parameter for Nitrate build-up: Janaury 1 to March 30") ,x = "Year", y = "b")
+d=d+scale_colour_discrete(name="Year")
+d
+
 ```
 
 It can be observed that ammonium buildup does fit the linear model in most depths as nicely as nitrate. Intraannual changes are significatn, and once more illustrate the complexity of the system and its divergence from linearity. The coefficients of the model  show a slightly smaller range, and illustrate that the best $R^2$ values of ca. $a=5*10^6$ and $b=5*10^5$ that describe ammonium build up between April $30^{th}$ and December $1^{st}$ using the following equation: $$NH_4=5*10^6t+5*10^5$$, where t is provided in days. Unsurprisingly, the model has the best fit for depths of 20 to 35m, where oxygenation is solely depends on annual stratification and monomictic mixing.
 
-```{r parameter estimation6, echo=FALSE, warning=FALSE, message=FALSE}
+```{r NH4 modelling all depths, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 
 x.depth=seq(from=1, to=40, by=1)
 data.for.model=vector(mode = "list", length=0)
@@ -855,10 +876,10 @@ for (ii in 1:length(NH4.model)){
 }
 
 NH4.model.df$Year=as.double(NH4.model.df$Year)
-summary(NH4.model.df)
+summary(NH4.model.df[,1:4])
 ```
 
-```{r parameter estimation5, echo=FALSE, warning=FALSE, message=FALSE}
+```{r NH4 parameter presentation, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 R2=expression(R^{2})
 d=ggplot(NH4.model.df, aes(x=factor(as.integer(Depth)), y=r2, colour=as.factor(Year)))+geom_point()
 d=d+labs(title=paste("NH4 build-up Linear Modeling: April 30 to December 1") ,x = "Depth", y = "r2")
@@ -872,6 +893,23 @@ d=ggplot(NH4.model.df, aes(x=as.double(b), y=as.double(a), colour=r2, shape=as.f
 d=d+labs(title=paste("NH4 build-up Linear Modeling: April 30 to December 1") ,x = "b", y = "a")
 d=d+scale_colour_gradient2(name=R2, low = "blue", mid = "green" , high = "red", midpoint=0.5)
 d=d+scale_shape_discrete(name="Year")
+d
+
+d=d+scale_x_continuous(limits=c(0,3.5E5))
+d=d+scale_y_continuous(limits=c(0,0.5E7))
+d
+
+d=ggplot(NH4.model.df, aes(x=as.factor(Year), y=as.double(a), colour=as.factor(Year)))+geom_boxplot()
+d=d+labs(title=paste("a parameter for NH4 build-up: April 30 to December 1") ,x = "Year", y = "a")
+d=d+scale_colour_discrete(name="Year")
+d
+
+d=d+scale_y_continuous(limits=c(0,0.5E7))
+d
+
+d=ggplot(NH4.model.df, aes(x=as.factor(Year), y=as.double(b), colour=as.factor(Year)))+geom_boxplot()
+d=d+labs(title=paste("b parameter for NH4 build-up: April 30 to December 1") ,x = "Year", y = "b")
+d=d+scale_colour_discrete(name="Year")
 d
 
 
