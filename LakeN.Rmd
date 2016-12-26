@@ -831,6 +831,9 @@ d=d+scale_colour_gradient2(name=R2, low = "blue", mid = "green" , high = "red", 
 d=d+scale_shape_discrete(name="Year")
 d
 
+d=d+xlim(15, 40)
+d
+
 d=ggplot(Nitrate.model.df, aes(x=as.factor(Year), y=as.double(a), colour=as.factor(Year)))+geom_boxplot()
 d=d+labs(title=paste("a parameter for Nitrate build-up: Janaury 1 to March 30") ,x = "Year", y = "a")
 d=d+scale_colour_discrete(name="Year")
