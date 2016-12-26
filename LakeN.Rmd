@@ -1109,7 +1109,7 @@ d=d+scale_shape_discrete(name="Year")
 d
 
 d=ggplot(NH4.model.df, aes(x=as.factor(Year), y=as.double(a), colour=as.factor(Year)))+geom_boxplot()
-d=d+labs(title=paste("a consumption for NH4 build-up: January 10 to March 15") ,x = "Year", y = "a")
+d=d+labs(title=paste("a NH4 consumption: January 10 to March 15") ,x = "Year", y = "a")
 d=d+scale_colour_discrete(name="Year")
 d
 
@@ -1120,7 +1120,7 @@ d=d+scale_shape_discrete(name="Year")
 d
 
 d=ggplot(NH4.model.df, aes(x=as.factor(Year), y=as.double(b), colour=as.factor(Year)))+geom_boxplot()
-d=d+labs(title=paste("b consumption for NH4 build-up: January 10 to March 15") ,x = "Year", y = "b")
+d=d+labs(title=paste("b NH4 consumption : January 10 to March 15") ,x = "Year", y = "b")
 d=d+scale_colour_discrete(name="Year")
 d
 
