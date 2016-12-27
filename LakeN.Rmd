@@ -53,6 +53,7 @@ $$NH_3$$
 
 ### ammonium
 $$NH_4^+$$
+
 ### Hypolimion
 The lower layer of water in a stratified lake, typically cooler than the water above and relatively stagnant. develops anoxic condition due to limited interaction with the atmosphere
 
@@ -97,17 +98,19 @@ These  processes are inherintly biologically mediated, and their relative role i
 
 Nitrogen Cycle - Ammonification And Nitrification - Ammonium, Bacteria, Nitrate, and Acidic - JRank Articles http://science.jrank.org/pages/4690/Nitrogen-Cycle-Ammonification-nitrification.html#ixzz4U1Rm3S3A
 
-# The curent model
+# About thist model
 
-In this model a simplistic approach is applied in order to examine the possibility to model the transition between oxydized and reduced species in the lake. Due to the complexity of the processes, and the plethora of available data, the simplistic approach in this model relies on four key processes:
+In this model I examine the possibility to model the transition between oxydized and reduced species in the lake using a very simplistic approach. Due to the complexity of the processes, and the plethora of available data, the simplistic approach in this model relies on four key processes to model the nitrate-ammonioum transitions:
 
-1. Nitrification in oxydized conditions
-2. Ammonification in suboxic to anoxic conditions
-3. Ammonium consumption in the photic zone
-4. Lake mixing
+1. Nitrate build-up during lake stratification in the epylimnion
+2. Ammonification build-up during lake stratification in the hypolimnion
+3. Lake mixing
+4. Nitrate consumption following lake mixing
+5. Ammonium consumption following lake mixing
 
 This model provides the oppertunity to examine wether these processes suffice to model the dominant segments of the N cycle, or should a more complex, biologically-oriented approach be adopted to configure the N cycle properly.
 
+------
 
 ## Data preparation
 
@@ -181,6 +184,8 @@ summary(data1)
 
 ```
 
+\newpage
+
 ## Interpolate the Data into 1 m Intervals
 
 Use the function "depthinterp"" to interpolate the data into uniform length for every 1 m. This is essential for later calculating the volume of each depth interval and the mass of each N specie measured in this depth.
@@ -206,7 +211,6 @@ for (ii in 1:length(data1.split)){
 #remove any empty elemts of the list
 data1.split.interp[which(names(data1.split.interp) %in% c(""))]=NULL
 ```
-
 
 ### Demonstrate interpolations of randomly selected data
 
