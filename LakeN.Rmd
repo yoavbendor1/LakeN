@@ -9,10 +9,10 @@ output: pdf_document
 knitr::opts_chunk$set(echo = FALSE , warning=FALSE, message=FALSE)
 
 # at home
-#setwd("F:/MyDocuments/GIT/LakeN/R")
+setwd("F:/MyDocuments/GIT/LakeN/R")
 
 # at HUJI
-setwd("C:/Users/user/Documents/LakeN/R")
+#setwd("C:/Users/user/Documents/LakeN/R")
 
 source('depthinterp.R')
 source('realdepth.R')
@@ -27,40 +27,89 @@ source('datesplitter.R')
 source('yearbyelement.R')
 
 # at home
- #setwd("F:/MyDocuments/GIT/LakeN")
+ setwd("F:/MyDocuments/GIT/LakeN")
 # at HUJI
-setwd("C:/Users/user/Documents/LakeN")
+#setwd("C:/Users/user/Documents/LakeN")
 
 ```
 
 # Introduction
 
-This model was written as a project for course 68806 Eco-hydrologic modelling with R
-This model illustrates the annual N cycle in a lake in northern Israel, and simulates the transitions from oxydized species into reduced species
+This model was written as a project for course 68806: Eco-hydrologic modelling with R, Hebrew University of Jerusalem.
 
-## Background
+The purpose of this model is to illustrate the annual N cycle in a lake in northern Israel, and to simulate the transitions between two dominant N species: Nitrate $(NO_3)$ and Ammonium $(NH_4^+)$
 
-Anthropogenic effects of the recent years has largely affected the nitrogen cycle during the last decades. Increased N inputs, primarily as river-born nitrate, originating in soils, encourage eutrophication, anoxic conditions and blooms of harmful algae, interrupting the ecological cycle.
+# Key terms
 
-The nitrogen cycle includes several key processes, which include its cycling between several species and affect its bioavailability. Rivers are efficient N sinks, but in its inorganic forms, it is removed from the water through assimilation and adsorption onto sediments. In addition, the precipitation of organic N and denitrification are two major processes that remove N from the water.
-In the studied lake, an N-fixing algae of the cyanobacteria phylum appeared for the first time during the autumn of 1994. It reappears every year since that time, and was recently accompanied by another cyanobacteria specie since 2005. This dramatic change in lake ecology is the likely result of changes in the availability of water-soluble nutrients, which provided the N-fixing species with a relative ecological advantage.
+### Nitrate
+$$NO_3$$
 
-It is important to remember that the measurment process provides a "snapshot" of lake conditions in a specific day, and that all coocuring processes create interchanging fluxes of nitrogen between the nitrogen pools. While the modelling of the molecular process is difficult to configure, because it involves complex biological processes, the net transformation of species between pools can be modelled through a "net-gross" approach, where molecular transformations are summed into simplistic, time-dependent processes, that are arithmatically disconnected. If each of these processes is modelled properly, the N cycle can be modelled in terms of net fluxes, without taking into account all possible processes and their complexities.
+### Nitrite
+$$NO_2^-$$
 
-## The N cycle in the studied lake
+### ammonia
+$$NH_3$$
 
-Several key process dominate the N cycle of the studied lake. These include nitrification, denitrification, the fixation of atmospheric nitrogen by cycanobacteria and N recycling through consumption of primary producer up the food chasin. These  processes are inherintly biologically mediated, and their relative role in the transformation of one specie to another greatly depends on physical conditions including radiation and temperature as well as the chemical properties of the lake, which are largely dependent on its limnological cycle. The consideration of these parameters in a limnological perspective is essential for the consideration of the dominant processes and their ecological impact. These processes are briefly described in the section below:
+
+### ammonium
+$$NH_4^+$$
+### Hypolimion
+The lower layer of water in a stratified lake, typically cooler than the water above and relatively stagnant. develops anoxic condition due to limited interaction with the atmosphere
+
+### Epilimion
+The upper layer of water in a stratified lake, which remains oxygenated throughout the year.
+
+### Thermocline
+A steep temperature gradient in a body of water such as a lake, marked by a layer above and below which the water is at different temperatures. Because warmer water are less dense, the thermocline dictates the mixing depth of the lake, and therefore directly determine chemical properties of the lake's layers. In the studied lake, the developing thermocline closely coincides with the oxycline and chemocline.
+
+### Oxycline
+The layer that encompasses a sharp gradient in oxygen concentration in the lake.
 
 ### Nitrification
 
-Nitrification includes the oxidation of ammonia into nitrite in a two-stage process mediated by the nitrosomonas bacteria followed by the oxidation of nitrate through the mediation of the nitrobacteria, that can be summarized as: $$NH_4^+ →NH_3→NO_2^-→NO_3$$
+Nitrification includes the oxidation of ammonia into nitrite in a two-stage process, initiated by the nitrosomonas bacteria, and followed by the oxidation of nitrate by nitrobacteria. The process can be summarized as: $$NH_4^+ →NH_3→NO_2^-→NO_3$$
 
 This process largely depends on oxygen availability, ambient conditions and the size of bacterial populations. The process has been documented to be carried quickly and directly into nitrate in some years, whereas in others the increase in nitrite preceded the transformation into nitrate by several days and up to a couple of weeks.
 
-The nitrification takes places in oxic conditions, and largely depends on the mixing of the water column during the winter, and is halted in the hypolimnion during the well-stratified conditions that develop from spring to autumn. Nitrification is however possible still possible in the interface of the hypolimnion with the epilimnion, where dissolved oxygen is present to some extent. Nitrate concentrations are highest at the end of January after the mixing of the lake is most effective, as well as additions of from surface runoff. Correspondingly, nitrite and ammonium are low during this interval.
+Nitrification takes places in oxic conditions, and largely depends on the mixing of the water column during the winter. It is halted in the hypolimnion during the well-stratified conditions that develop from spring to autumn, and reignites in winter, when the lake is fully mixed. Nitrification is however still possible in the interface of the hypolimnion with the epilimnion, where dissolved oxygen is present to some extent. Nitrate concentrations are highest at the end of January after a fuul mixing of the lake is achieved, in addition to riverborn nitrate that originates from fertilization and soils.
+
+### Ammonification
+
+Ammonification is the process by which organic biomass nitrogen is recycled after creatures death. Ammonification is carried out by a diverse array of microorganisms that perform ecological decay services, and its product is ammonia or ammonium ion. Ammonium buildsup during anoxic conditions that form in the developing hypolimnion between spring and autumn. Ammonium is a suitable source of nutrition for many species of algae, and is therefore readily consumed upon lake mixing and its injection into the photic zone during winter.
+
+## Background
+
+Anthropogenic effects during recent years had largely affected the nitrogen cycle in the lake during the last decades. Increased N inputs, primarily as river-born nitrate, originating in soils and fertilization, strengthen eutrophication, anoxic conditions and blooms of harmful algae, thus interrupting the ecological cycle.
+
+The nitrogen cycle includes several key processes, which include the cycling between several species which dictate its bioavailability and importance in biogeochemical processes. Rivers are efficient N sinks, but in its inorganic forms, it is removed from the water through assimilation and adsorption onto sediments.
+
+In the studied lake, an N-fixing algae of the cyanobacteria phylum appeared for the first time during the autumn of 1994. It reappears every year since that time, and was recently accompanied by another cyanobacteria specie since 2005. This dramatic change in lake ecology is the likely result of changes in the availability of water-soluble nutrients, which provided the N-fixing species with a relative ecological advantage.
+
+It is important to remember that the measurment process provides a "snapshot" of lake conditions in a specific time, and that all coocuring processes form interchanging fluxes of nitrogen between the various nitrogen pools. While the modelling of the molecular process is difficult to configure, because it involves complex biological processes, the net transformation of species between pools can be modelled through a "net-gross" approach, where molecular transformations are summed into simplistic, time-dependent processes, that are arithmatically disconnected. If each of these processes can be adequately modelled following simplistic time-dependant equations, the N cycle can be modelled in terms of net fluxes, without taking into account all possible processes and their complexities.
+
+## The N cycle
+
+Several key process dominate the N cycle of the studied lake. These include nitrification, denitrification, the fixation of atmospheric nitrogen by cycanobacteria and N recycling through consumption of primary producer up the food chasin. Nitrate and ammonium are constantly consumed by primary producers that are consequently consumed by grazers. The following ecological food chain serves as an endless conveyor that recycles nitrogen through the lake.
+
+These  processes are inherintly biologically mediated, and their relative role in the transformation of one specie to another greatly depends on ambient conditions such as radiation and temperature, as well as other chemical properties, and oxygen content in particular, which are largely dependent on its limnological cycle. The consideration of these parameters in a limnological perspective is essential for the consideration of the dominant processes and their ecological impact.
+
+### References
+
+Nitrogen Cycle - Ammonification And Nitrification - Ammonium, Bacteria, Nitrate, and Acidic - JRank Articles http://science.jrank.org/pages/4690/Nitrogen-Cycle-Ammonification-nitrification.html#ixzz4U1Rm3S3A
+
+# The curent model
+
+In this model a simplistic approach is applied in order to examine the possibility to model the transition between oxydized and reduced species in the lake. Due to the complexity of the processes, and the plethora of available data, the simplistic approach in this model relies on four key processes:
+
+1. Nitrification in oxydized conditions
+2. Ammonification in suboxic to anoxic conditions
+3. Ammonium consumption in the photic zone
+4. Lake mixing
+
+This model provides the oppertunity to examine wether these processes suffice to model the dominant segments of the N cycle, or should a more complex, biologically-oriented approach be adopted to configure the N cycle properly.
 
 
-# Data preparation
+## Data preparation
 
 The data is provided in discrete form of concentration measurments. The depths of the measurments are not constant, and the time intervals between measurments are also not constant, and range from several days to several weeks.
 
@@ -75,6 +124,7 @@ library(LakeN)
 library(plot3D)
 library(ggplot2)
 library(png)
+library(reshape2)
 
 # read the data for the model
 # use the read.table function in the cas of a tab=delimited text file
@@ -126,6 +176,8 @@ for (ii in 1:length(data1.split.orig)){
 
 #remove any empty elemts of the list
 data1.split[which(names(data1.split) %in% c(""))]=NULL
+
+summary(data1)
 
 ```
 
