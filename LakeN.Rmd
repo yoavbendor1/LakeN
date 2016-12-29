@@ -9,10 +9,10 @@ output: pdf_document
 knitr::opts_chunk$set(echo = FALSE , warning=FALSE, message=FALSE)
 
 # at home
-#setwd("F:/MyDocuments/GIT/LakeN/R")
+setwd("F:/MyDocuments/GIT/LakeN/R")
 
 # at HUJI
-setwd("C:/Users/user/Documents/LakeN/R")
+#setwd("C:/Users/user/Documents/LakeN/R")
 
 source('depthinterp.R')
 source('realdepth.R')
@@ -29,9 +29,9 @@ source('findoxycline.R')
 
 
 # at home
-# setwd("F:/MyDocuments/GIT/LakeN")
+ setwd("F:/MyDocuments/GIT/LakeN")
 # at HUJI
-setwd("C:/Users/user/Documents/LakeN")
+#setwd("C:/Users/user/Documents/LakeN")
 
 ```
 
@@ -412,14 +412,7 @@ dim(y)=c(40,length(y)/40)
 # dim(y)=c(40,length(y)/40)
 
 # calculate the oxycline depth
-oxycline.depth=findoxylcline(input=data1.split.interp, oxygen.data.col=9, threshold = 0.85, depth.interval=12,smooth.param=0.09)
-
-# plot Oxygen values
-z= data1.split.interp.depth.quant.df$Oxygen
-dim(z)=c(40,length(z)/40)
-image2D(z,x,y, main="Oxygen [amount]",xlab='',ylab="depth [m]",ylim=rev(range(y)),xaxt="n")
-r <- as.POSIXct(range(data1.split.interp.depth.quant.df$Date), "weeks")
-axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%m-%Y")
+oxycline.depth=findoxylcline(input=data1.split, max.depth=40,oxygen.data.col=9, p.value=0.05, threshold = 5,threshold.depth = 30, depth.interval=15,smooth.param=0.04)
 
 # plot Oxygen concentration values
 z=oxygen.concentration.interp
@@ -427,9 +420,15 @@ z=matrix(as.matrix(oxygen.concentration.interp), nrow=40, ncol=nrow(z)/40)
 image2D(z,x,y, main="Oxygen [concentration]",xlab='',ylab="depth [m]",ylim=rev(range(y)),xaxt="n")
 r <- as.POSIXct(range(data1.split.interp.depth.quant.df$Date), "weeks")
 axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%m-%Y")
-#lines(unique(x),oxycline.depth[[1]] ,col="white",lwd=2)
+lines(unique(x),oxycline.depth[[1]] ,col="white",lwd=2)
 lines(unique(x),oxycline.depth[[2]] ,col="red",lwd=2)
 
+# plot Oxygen values
+z= data1.split.interp.depth.quant.df$Oxygen
+dim(z)=c(40,length(z)/40)
+image2D(z,x,y, main="Oxygen [amount]",xlab='',ylab="depth [m]",ylim=rev(range(y)),xaxt="n")
+r <- as.POSIXct(range(data1.split.interp.depth.quant.df$Date), "weeks")
+axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%m-%Y")
 
 # plot Nitrate values
 z= data1.split.interp.depth.quant.df$Nitrate
