@@ -29,7 +29,7 @@ source('findoxycline.R')
 
 
 # at home
- setwd("F:/MyDocuments/GIT/LakeN")
+setwd("F:/MyDocuments/GIT/LakeN")
 # at HUJI
 #setwd("C:/Users/user/Documents/LakeN")
 
@@ -315,7 +315,7 @@ for (ii in 1:length(dates)){
   
   temp=conctoquant(hypso.curve=data2, input=data1.split.depth[[temp.date]])
   data1.split.depth.quant[[temp.date]]=data.frame(temp)
-
+  
 }
 #remove any empty elemts of the list
 data1.split.interp.depth.quant[which(names(data1.split.interp.depth.quant) %in% c(""))]=NULL
@@ -420,8 +420,16 @@ z=matrix(as.matrix(oxygen.concentration.interp), nrow=40, ncol=nrow(z)/40)
 image2D(z,x,y, main="Oxygen [concentration]",xlab='',ylab="depth [m]",ylim=rev(range(y)),xaxt="n")
 r <- as.POSIXct(range(data1.split.interp.depth.quant.df$Date), "weeks")
 axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%m-%Y")
-lines(unique(x),oxycline.depth[[1]] ,col="white",lwd=2)
+
+# plot Oxygen concentration values
+z=oxygen.concentration.interp
+z=matrix(as.matrix(oxygen.concentration.interp), nrow=40, ncol=nrow(z)/40)
+image2D(z,x,y, main="Oxygen [concentration] and Oxycline",xlab='',ylab="depth [m]",ylim=rev(range(y)),xaxt="n")
+r <- as.POSIXct(range(data1.split.interp.depth.quant.df$Date), "weeks")
+axis.Date(1, at = seq(r[1], r[2], by = "month"), format = "%m-%Y")
+#lines(unique(x),oxycline.depth[[1]] ,col="white",lwd=2)
 lines(unique(x),oxycline.depth[[2]] ,col="red",lwd=2)
+
 
 # plot Oxygen values
 z= data1.split.interp.depth.quant.df$Oxygen
@@ -606,9 +614,9 @@ d
 
 ### Process rate estimation
 
-It can be observed from the figures presented above that nitrification is dominant in the upper portions of the lake (depicted for 10m depth), primarily between January and April, when the mixing of the lake decreases its content through a down-ward propagating mixing of the oxygenated epilimnion with the lower, oxygen-depleted hypolimnion. Ammonium, on the other hand, develops during the stratified lake conditions in its hypolimnion (depicted for depth 30 m), and peaks at the begining of May, right before the mixing of the lake reaches the deeper parts of the lake, denitrification is halted, and the deeper lake is oxygenated once more.
+It can be observed from the figures presented above that nitrification is dominant in the upper portions of the lake (depicted for 10m depth), primarily between January and April. From April thtough August nitrate is consumed by primary producers. Ammonium, develops during the stratified lake conditions in its hypolimnion (depicted for depth 30 m), and peaks at during December, right before the mixing of the lake when the deeper lake is oxygenated once more. The ammonium is readily consumed by the producers in the epiliomnion after its mixing. In the following section the time-dependent development of each of the processes is estimated in order to decide whether a linear fit is suited to simulate each of the build-up and consumption processes.
 
-Simulate Nitrate build-up between November $1^{st}$ and April $30^{st}$ in 10m depth in order to estimate processes rate
+Simulate nitrate build-up between January $1^{st}$ and March $30^{th}$ in 10m depth in order to estimate processes rate
 
 ```{r nitrate modelling, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 # segment the data to model by dates
@@ -667,7 +675,7 @@ d
 
 ```
 
-simulate NH4 build-up between April $30^{st}$ and December $1^{st}$ in 30m depth in order to estimate reaction rate
+simulate NH4 build-up between April $30^{th}$ and December $1^{st}$ in 30m depth in order to estimate reaction rate
 
 ```{r NH4 build-up modelling, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 # segment the data to model by dates
@@ -838,7 +846,7 @@ d
 
 ### Coeffiecients assement for all depths
 
-After consideration of the dominant processes that control nitrate and ammonium content in the lake, the following section provides an assesment of the processes and their fit to a linear model in each depth. The $R^2$ value can be used to asses the best fit of the model for each depth. It can be observed that nitrate buildup fits a linear model in most depths, although some intraannual changes illustrate the complexity of the system and its divergence from linearity. The coefficients of the model also show a wide range, and illustrate that the best $R^2$ values were found for the year 2012 (triangles) and values of ca. $a=5*10^6$ and $b=4*10^5$ that describe nitrate build up between Novemebr $1^{st}$ and April $31^{st}$ using the following equation: $$NO_3=5*10^6*t+4*10^5$$, where t is provided in days.
+After consideration of the dominant processes that control nitrate and ammonium content in the lake, the following section provides an assesment of the processes and their fit to a linear model separately for  each depth. The $R^2$ value can be used to asses the best fit of the model for each depth. It can be observed that the quality of the fit varries greatly amongst different years. This elucidates the effect of varying nitrate additions from the lake's sorrounding, but also relates to the hydrological differences, since every year the lake receives different amounts of water, and therefore the amount of water that leaves it through the southern dam.
 
 ```{r Nitrate buildup modelling all depths, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 
@@ -868,8 +876,8 @@ for (ii in 1:length(x.depth)){
   temp2=yearassigner(input=temp)
   
   # split the data set into a "season-based" list
-    temp3=split(temp2,f=temp2$Year)
- # temp3=datesplitter(temp2,min.date=min.date,max.date=max.date)
+  temp3=split(temp2,f=temp2$Year)
+  # temp3=datesplitter(temp2,min.date=min.date,max.date=max.date)
   
   # cahnge the year value by element name for following plotting with ggplot
   #temp3=yearbyelement(input=temp3)
@@ -901,33 +909,36 @@ for (ii in 1:length(x.depth)){
     rownames(model.param[[temp.names[jj]]]) = ii
     colnames(model.param[[temp.names[jj]]]) = c("Depth", "a", "b","r2")
     model.param=yearbyelement(model.param)
-
+    
   }
-      model.param=yearbyelement(model.param)
-
+  model.param=yearbyelement(model.param)
+  
   Nitrate.model[[ii]]=model.param
 }
 
 
 temp.df=data.frame(matrix(data=NA, ncol=5, nrow=1))
 colnames(temp.df) = colnames((model.param[[temp.names[1]]]))
-Nitrate.model.df=data.frame(matrix(data=NA, ncol=5, nrow=40*3))
+Nitrate.model.df=data.frame(matrix(data=NA, ncol=5, nrow=40*length(temp.names)))
 colnames(Nitrate.model.df) = colnames((model.param[[temp.names[1]]]))
 ll=seq(from=1, to=nrow(Nitrate.model.df), by=length(Nitrate.model[[1]]))
-       
-       for (ii in 1:length(Nitrate.model)){
-         for (jj in 1:length(Nitrate.model[[ii]])){
-           temp.df=Nitrate.model[[ii]][[jj]]
-           Nitrate.model.df[ll[ii]+jj-1,1:5]=temp.df
-         }
-       }
+
+for (ii in 1:length(Nitrate.model)){
+  for (jj in 1:length(Nitrate.model[[ii]])){
+    temp.df=Nitrate.model[[ii]][[jj]]
+    Nitrate.model.df[ll[ii]+jj-1,1:5]=temp.df
+  }
+}
 
 Nitrate.model.df$Year=as.double(Nitrate.model.df$Year)
 
 summary(Nitrate.model.df[,1:4])
+
+rm(temp, temp2, temp3)
+
 ```
 
-```{r Nitrate parameter presentation, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
+```{r Nitrate buildup parameter presentation, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 R2=expression(R^{2})
 
 d=ggplot(Nitrate.model.df, aes(x=factor(as.integer(Depth)), y=r2, colour=as.factor(Year), shape=as.factor(Year)))+geom_point()
@@ -975,7 +986,7 @@ d
 
 ```
 
-It can be observed that ammonium buildup does fit the linear model in most depths as nicely as nitrate. Intraannual changes are significatn, and once more illustrate the complexity of the system and its divergence from linearity. The coefficients of the model  show a slightly smaller range, and illustrate that the best $R^2$ values of ca. $a=5*10^6$ and $b=5*10^5$ that describe ammonium build up between April $30^{th}$ and December $1^{st}$ using the following equation: $$NH_4=5*10^6t+5*10^5$$, where t is provided in days. Unsurprisingly, the model has the best fit for depths of 20 to 35m, where oxygenation is solely depends on annual stratification and monomictic mixing.
+It can be observed that ammonium buildup does fit the linear model in most depths as nicely as nitrate. Intraannual changes are significatn, and once more illustrate the complexity of the system and its divergence from linearity. Unsurprisingly, the model has the best fit for depths of 20 to 35m, where oxygenation solely depends on annual stratification and mixing.
 
 ```{r NH4 build-up modelling all depths, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 
@@ -1009,7 +1020,7 @@ for (ii in 1:length(x.depth)){
   temp3=split(temp2,f=temp2$Year)
   
   # cahnge the year value by element name for following plotting with ggplot
- # temp3=yearbyelement(input=temp3)
+  # temp3=yearbyelement(input=temp3)
   
   # find the time [in days] between measurments
   datedif=datedifference(temp3)
@@ -1048,7 +1059,7 @@ for (ii in 1:length(x.depth)){
 
 temp.df=data.frame(matrix(data=NA, ncol=5, nrow=1))
 colnames(temp.df) = colnames((model.param[[temp.names[1]]]))
-NH4.model.df=data.frame(matrix(data=NA, ncol=5, nrow=40*4))
+NH4.model.df=data.frame(matrix(data=NA, ncol=5, nrow=40*length(temp.names)))
 colnames(NH4.model.df) = colnames((model.param[[temp.names[1]]]))
 ll=seq(from=1, to=nrow(NH4.model.df), by=length(NH4.model[[1]]))
 
@@ -1061,9 +1072,11 @@ for (ii in 1:length(NH4.model)){
 
 NH4.model.df$Year=as.double(NH4.model.df$Year)
 summary(NH4.model.df[,1:4])
+
+rm(temp, temp2, temp3)
 ```
 
-```{r NH4 parameter presentation, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
+```{r NH4 buildup parameter presentation, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 R2=expression(R^{2})
 d=ggplot(NH4.model.df, aes(x=factor(as.integer(Depth)), y=r2, colour=as.factor(Year), shape=as.factor(Year)))+geom_point()
 d=d+labs(title=paste("NH4 build-up Linear Modeling: April 30 to December 1") ,x = "Depth [m]", y = "r2")
@@ -1115,7 +1128,7 @@ d
 
 ```
 
-Ammonium consumption after mixing between January $10^{th}$ to March $15^{th}$
+Ammonium consumption after mixing between January $15^{th}$ to March $15^{th}$
 
 ```{r NH4 consumption all depths, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 
@@ -1126,20 +1139,21 @@ for (ii in 1:length(x.depth)){
   depth.indices=which(match(data1.split.interp.quant.df$Depth,x.depth[ii])==1)
   data.for.model[[x.depth[ii]]]=data1.split.interp.quant.df[depth.indices,]
 }
+
 # remove empty elements from list
 data.for.model[sapply(data.for.model, is.null)] =NULL
 
 #define min and max date for modelling
-min.date=as.Date("2010-01-10")
+min.date=as.Date("2010-01-15")
 max.date=as.Date("2010-03-15")
 
 # initialize empty lists for model parameters collection
-lm.NH4=vector("list", length=0)
+lm.NH4.b=vector("list", length=0)
 model.param=vector("list", length=0)
-NH4.model=vector("list", length=0)
+NH4.model.b=vector("list", length=0)
 
 for (ii in 1:length(x.depth)){
-  temp=datesegmenter(min.date=min.date, max.date=max.date, input=as.data.frame(data.for.model[[x.depth[ii]]]), first.data.col=3)
+  temp=datesegmenter(min.date=min.date, max.date=max.date,     input=as.data.frame(data.for.model[[x.depth[ii]]]), first.data.col=3)
   
   # assign the year to each measurment
   temp2=yearassigner(input=temp)
@@ -1149,7 +1163,7 @@ for (ii in 1:length(x.depth)){
   temp3=split(temp2,f=temp2$Year)
   
   # cahnge the year value by element name for following plotting with ggplot
- # temp3=yearbyelement(input=temp3)
+  # temp3=yearbyelement(input=temp3)
   
   # find the time [in days] between measurments
   datedif=datedifference(temp3)
@@ -1168,11 +1182,11 @@ for (ii in 1:length(x.depth)){
   
   temp.names=names(temp3)
   for (jj in 1:length(temp.names)){
-    lm.NH4[[temp.names[jj]]]=lm(temp3[[jj]]$NH4~unlist(datedif[[2]][[jj]]))
-
-    a = as.double(coef(lm.NH4[[jj]])[2])
-    b = as.double(coef(lm.NH4[[jj]])[1])
-    r2 = as.double(summary(lm.NH4[[jj]])$r.squared)
+    lm.NH4.b[[temp.names[jj]]]=lm(temp3[[jj]]$NH4~unlist(datedif[[2]][[jj]]))
+    
+    a = as.double(coef(lm.NH4.b[[jj]])[2])
+    b = as.double(coef(lm.NH4.b[[jj]])[1])
+    r2 = as.double(summary(lm.NH4.b[[jj]])$r.squared)
     
     model.param[[temp.names[jj]]]=data.frame(ii,a,b,r2)
     rownames(model.param[[temp.names[jj]]]) = ii
@@ -1182,30 +1196,33 @@ for (ii in 1:length(x.depth)){
   }
   model.param=yearbyelement(model.param)
   
-  NH4.model[[ii]]=model.param
+  NH4.model.b[[ii]]=model.param
 }
 
 temp.df=data.frame(matrix(data=NA, ncol=5, nrow=1))
 colnames(temp.df) = colnames((model.param[[temp.names[1]]]))
-NH4.model.df=data.frame(matrix(data=NA, ncol=5, nrow=40*3))
-colnames(NH4.model.df) = colnames((model.param[[temp.names[1]]]))
-ll=seq(from=1, to=nrow(NH4.model.df), by=length(NH4.model[[1]]))
+NH4.model.b.df=data.frame(matrix(data=NA, ncol=5, nrow=40*length(temp.names)))
+colnames(NH4.model.b.df) = colnames((model.param[[temp.names[1]]]))
+ll=seq(from=1, to=nrow(NH4.model.b.df), by=length(NH4.model.b[[1]]))
 
-for (ii in 1:length(NH4.model)){
-  for (jj in 1:length(NH4.model[[ii]])){
-    temp.df=NH4.model[[ii]][[jj]]
-    NH4.model.df[ll[ii]+jj-1,1:5]=temp.df
+for (ii in 1:length(NH4.model.b)){
+  for (jj in 1:length(NH4.model.b[[ii]])){
+    temp.df=NH4.model.b[[ii]][[jj]]
+    NH4.model.b.df[ll[ii]+jj-1,1:5]=temp.df
   }
 }
 
-NH4.model.df$Year=as.double(NH4.model.df$Year)
-summary(NH4.model.df[,1:4])
+NH4.model.b.df$Year=as.double(NH4.model.b.df$Year)
+summary(NH4.model.b.df[,1:4])
+
+rm(temp, temp2, temp3)
+
 ```
 
 ```{r NH4 consumption parameter presentation, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 R2=expression(R^{2})
 
-d=ggplot(NH4.model.df, aes(x=factor(as.integer(Depth)), y=r2, colour=as.factor(Year), shape=as.factor(Year)))+geom_point()
+d=ggplot(NH4.model.b.df, aes(x=factor(as.integer(Depth)), y=r2, colour=as.factor(Year), shape=as.factor(Year)))+geom_point()
 d=d+labs(title=paste("NH4 consumption Linear Modeling: January 10 to March 15") ,x = "Depth [m]", y = "r2")
 d=d+scale_x_discrete("Depth", breaks=seq(from=0, to=40, by=5))
 d=d+scale_y_continuous(R2, breaks=seq(0, to=1, by=0.1))
@@ -1214,32 +1231,32 @@ d=d+scale_color_discrete(name="Year")
 d
 
 
-d=ggplot(NH4.model.df, aes(x=as.double(b), y=as.double(a), colour=r2, shape=as.factor(Year)))+geom_point()
+d=ggplot(NH4.model.b.df, aes(x=as.double(b), y=as.double(a), colour=r2, shape=as.factor(Year)))+geom_point()
 d=d+labs(title=paste("NH4 consumption Linear Modeling: January 10 to March 15") ,x = "b", y = "a")
 d=d+scale_colour_gradient2(name=R2, low = "blue", mid = "green" , high = "red", midpoint=0.5)
 d=d+scale_shape_discrete(name="Year")
 d
 
 
-d=ggplot(NH4.model.df, aes(x=Depth, y=as.double(a), colour=r2, shape=as.factor(Year)))+geom_point()
+d=ggplot(NH4.model.b.df, aes(x=Depth, y=as.double(a), colour=r2, shape=as.factor(Year)))+geom_point()
 d=d+labs(title=paste("NH4 consumption Linear Modeling: January 10 to March 15") ,x = "Depth [m]", y = "a")
 d=d+scale_colour_gradient2(name=R2, low = "blue", mid = "green" , high = "red", midpoint=0.5)
 d=d+scale_shape_discrete(name="Year")
 #d=d+geom_smooth(method='lm', colour=c("red", "dark green", "blue"))
 d
 
-d=ggplot(NH4.model.df, aes(x=as.factor(Year), y=as.double(a), colour=as.factor(Year)))+geom_boxplot()
+d=ggplot(NH4.model.b.df, aes(x=as.factor(Year), y=as.double(a), colour=as.factor(Year)))+geom_boxplot()
 d=d+labs(title=paste("a NH4 consumption: January 10 to March 15") ,x = "Year", y = "a")
 d=d+scale_colour_discrete(name="Year")
 d
 
-d=ggplot(NH4.model.df, aes(x=Depth, y=as.double(b), colour=r2, shape=as.factor(Year)))+geom_point()
+d=ggplot(NH4.model.b.df, aes(x=Depth, y=as.double(b), colour=r2, shape=as.factor(Year)))+geom_point()
 d=d+labs(title=paste("NH4 consumption Linear Modeling: January 10 to March 15") ,x = "Depth [m]", y = "b")
 d=d+scale_colour_gradient2(name=R2, low = "blue", mid = "green" , high = "red", midpoint=0.5)
 d=d+scale_shape_discrete(name="Year")
 d
 
-d=ggplot(NH4.model.df, aes(x=as.factor(Year), y=as.double(b), colour=as.factor(Year)))+geom_boxplot()
+d=ggplot(NH4.model.b.df, aes(x=as.factor(Year), y=as.double(b), colour=as.factor(Year)))+geom_boxplot()
 d=d+labs(title=paste("b NH4 consumption : January 10 to March 15") ,x = "Year", y = "b")
 d=d+scale_colour_discrete(name="Year")
 d
@@ -1249,7 +1266,7 @@ d
 
 Nitrate consumption after mixing between January $10^{th}$ to March $15^{th}$
 
-```{r NH4 consumption all depths, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
+```{r nitrate consumption all depths, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 
 x.depth=seq(from=1, to=40, by=1)
 data.for.model=vector(mode = "list", length=0)
@@ -1268,7 +1285,7 @@ max.date=as.Date("2010-07-01")
 # initialize empty lists for model parameters collection
 lm.Nitrate.b=vector("list", length=0)
 model.param=vector("list", length=0)
-Nitrate.b.model=vector("list", length=0)
+nitrate.model.b=vector("list", length=0)
 
 for (ii in 1:length(x.depth)){
   temp=datesegmenter(min.date=min.date, max.date=max.date, input=as.data.frame(data.for.model[[x.depth[ii]]]), first.data.col=3)
@@ -1281,7 +1298,7 @@ for (ii in 1:length(x.depth)){
   temp3=split(temp2,f=temp2$Year)
   
   # cahnge the year value by element name for following plotting with ggplot
- # temp3=yearbyelement(input=temp3)
+  # temp3=yearbyelement(input=temp3)
   
   # find the time [in days] between measurments
   datedif=datedifference(temp3)
@@ -1301,7 +1318,7 @@ for (ii in 1:length(x.depth)){
   temp.names=names(temp3)
   for (jj in 1:length(temp.names)){
     lm.Nitrate.b[[temp.names[jj]]]=lm(temp3[[jj]]$Nitrate~unlist(datedif[[2]][[jj]]))
-
+    
     a = as.double(coef(lm.Nitrate.b[[jj]])[2])
     b = as.double(coef(lm.Nitrate.b[[jj]])[1])
     r2 = as.double(summary(lm.Nitrate.b[[jj]])$r.squared)
@@ -1314,30 +1331,33 @@ for (ii in 1:length(x.depth)){
   }
   model.param=yearbyelement(model.param)
   
-  Nitrate.b.model[[ii]]=model.param
+  nitrate.model.b[[ii]]=model.param
 }
 
 temp.df=data.frame(matrix(data=NA, ncol=5, nrow=1))
 colnames(temp.df) = colnames((model.param[[temp.names[1]]]))
-Nitrate.b.model.df=data.frame(matrix(data=NA, ncol=5, nrow=40*4))
-colnames(Nitrate.b.model.df) = colnames((model.param[[temp.names[1]]]))
-ll=seq(from=1, to=nrow(Nitrate.b.model.df), by=length(Nitrate.b.model[[1]]))
+nitrate.model.b.df=data.frame(matrix(data=NA, ncol=5, nrow=40*length(temp.names)))
+colnames(nitrate.model.b.df) = colnames((model.param[[temp.names[1]]]))
+ll=seq(from=1, to=nrow(nitrate.model.b.df), by=length(nitrate.model.b[[1]]))
 
-for (ii in 1:length(Nitrate.b.model)){
-  for (jj in 1:length(Nitrate.b.model[[ii]])){
-    temp.df=Nitrate.b.model[[ii]][[jj]]
-    Nitrate.b.model.df[ll[ii]+jj-1,1:5]=temp.df
+for (ii in 1:length(nitrate.model.b)){
+  for (jj in 1:length(nitrate.model.b[[ii]])){
+    temp.df=nitrate.model.b[[ii]][[jj]]
+    nitrate.model.b.df[ll[ii]+jj-1,1:5]=temp.df
   }
 }
 
-Nitrate.b.model.df$Year=as.double(Nitrate.b.model.df$Year)
-summary(Nitrate.b.model.df[,1:4])
+nitrate.model.b.df$Year=as.double(nitrate.model.b.df$Year)
+summary(nitrate.model.b.df[,1:4])
+
+rm(temp, temp2, temp3)
+
 ```
 
 ```{r Nitrate consumption parameter presentation, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 R2=expression(R^{2})
 
-d=ggplot(Nitrate.b.model.df, aes(x=factor(as.integer(Depth)), y=r2, colour=as.factor(Year), shape=as.factor(Year)))+geom_point()
+d=ggplot(nitrate.model.b.df, aes(x=factor(as.integer(Depth)), y=r2, colour=as.factor(Year), shape=as.factor(Year)))+geom_point()
 d=d+labs(title=paste("Nitrate consumption Linear Modeling: April 15 to July 1") ,x = "Depth [m]", y = "r2")
 d=d+scale_x_discrete("Depth", breaks=seq(from=0, to=40, by=5))
 d=d+scale_y_continuous(R2, breaks=seq(0, to=1, by=0.1))
@@ -1346,34 +1366,107 @@ d=d+scale_color_discrete(name="Year")
 d
 
 
-d=ggplot(Nitrate.b.model.df, aes(x=as.double(b), y=as.double(a), colour=r2, shape=as.factor(Year)))+geom_point()
+d=ggplot(nitrate.model.b.df, aes(x=as.double(b), y=as.double(a), colour=r2, shape=as.factor(Year)))+geom_point()
 d=d+labs(title=paste("Nitrate consumption Linear Modeling: April 15 to July 1") ,x = "b", y = "a")
 d=d+scale_colour_gradient2(name=R2, low = "blue", mid = "green" , high = "red", midpoint=0.5)
 d=d+scale_shape_discrete(name="Year")
 d
 
 
-d=ggplot(Nitrate.b.model.df, aes(x=Depth, y=as.double(a), colour=r2, shape=as.factor(Year)))+geom_point()
+d=ggplot(nitrate.model.b.df, aes(x=Depth, y=as.double(a), colour=r2, shape=as.factor(Year)))+geom_point()
 d=d+labs(title=paste("Nitrate consumption Linear Modeling: April 15 to July 1") ,x = "Depth [m]", y = "a")
 d=d+scale_colour_gradient2(name=R2, low = "blue", mid = "green" , high = "red", midpoint=0.5)
 d=d+scale_shape_discrete(name="Year")
 #d=d+geom_smooth(method='lm', colour=c("red", "dark green", "blue"))
 d
 
-d=ggplot(Nitrate.b.model.df, aes(x=as.factor(Year), y=as.double(a), colour=as.factor(Year)))+geom_boxplot()
+d=ggplot(nitrate.model.b.df, aes(x=as.factor(Year), y=as.double(a), colour=as.factor(Year)))+geom_boxplot()
 d=d+labs(title=paste("a Nitrate consumption: April 15 to July 1") ,x = "Year", y = "a")
 d=d+scale_colour_discrete(name="Year")
 d
 
-d=ggplot(Nitrate.b.model.df, aes(x=Depth, y=as.double(b), colour=r2, shape=as.factor(Year)))+geom_point()
+d=ggplot(nitrate.model.b.df, aes(x=Depth, y=as.double(b), colour=r2, shape=as.factor(Year)))+geom_point()
 d=d+labs(title=paste("Nitrate consumption Linear Modeling: April 15 to July 1") ,x = "Depth [m]", y = "b")
 d=d+scale_colour_gradient2(name=R2, low = "blue", mid = "green" , high = "red", midpoint=0.5)
 d=d+scale_shape_discrete(name="Year")
 d
 
-d=ggplot(Nitrate.b.model.df, aes(x=as.factor(Year), y=as.double(b), colour=as.factor(Year)))+geom_boxplot()
+d=ggplot(nitrate.model.b.df, aes(x=as.factor(Year), y=as.double(b), colour=as.factor(Year)))+geom_boxplot()
 d=d+labs(title=paste("b Nitrate consumption : April 15 to July 1") ,x = "Year", y = "b")
 d=d+scale_colour_discrete(name="Year")
 d
+
+```
+
+### lake modelling
+
+Use the estimated parameters to model the lake N cycle
+
+```{r best fit estimation, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
+
+template=data.frame(cbind(Depth=seq(from=1, to=40, by=1), a_best=rep(NA, 40), a_min=rep(NA, 40), a_max=rep(NA, 40), b_best=rep(NA, 40), b_min=rep(NA, 40), b_max=rep(NA, 40)))
+
+nitrate.buildup.parameters=template
+NH4.buildup.parameters=template
+nitrate.consumption.parameters=template
+NH4.consumption.parameters=template
+
+temp=vector("list", length=0)
+temp=split(Nitrate.model.df,f=Nitrate.model.df$Depth)
+
+for (ii in 1:length(temp)){
+nitrate.buildup.parameters$a_best[ii]=temp[[ii]]$a[which.max(temp[[ii]]$r2)]
+nitrate.buildup.parameters$a_max[ii]=max(temp[[ii]]$a)
+nitrate.buildup.parameters$a_min[ii]=min(temp[[ii]]$a)
+
+nitrate.buildup.parameters$b_best[ii]=temp[[ii]]$b[which.max(temp[[ii]]$r2)]
+nitrate.buildup.parameters$b_max[ii]=max(temp[[ii]]$b)
+nitrate.buildup.parameters$b_min[ii]=min(temp[[ii]]$b)
+}
+
+for (ii in 1:length(temp)){
+NH4.buildup.parameters$a_best[ii]=temp[[ii]]$a[which.max(temp[[ii]]$r2)]
+NH4.buildup.parameters$a_max[ii]=max(temp[[ii]]$a)
+NH4.buildup.parameters$a_min[ii]=min(temp[[ii]]$a)
+
+NH4.buildup.parameters$b_best[ii]=temp[[ii]]$b[which.max(temp[[ii]]$r2)]
+NH4.buildup.parameters$b_max[ii]=max(temp[[ii]]$b)
+NH4.buildup.parameters$b_min[ii]=min(temp[[ii]]$b)
+}
+
+for (ii in 1:length(temp)){
+nitrate.consumption.parameters$a_best[ii]=temp[[ii]]$a[which.max(temp[[ii]]$r2)]
+nitrate.consumption.parameters$a_max[ii]=max(temp[[ii]]$a)
+nitrate.consumption.parameters$a_min[ii]=min(temp[[ii]]$a)
+
+nitrate.consumption.parameters$b_best[ii]=temp[[ii]]$b[which.max(temp[[ii]]$r2)]
+nitrate.consumption.parameters$b_max[ii]=max(temp[[ii]]$b)
+nitrate.consumption.parameters$b_min[ii]=min(temp[[ii]]$b)
+}
+
+for (ii in 1:length(temp)){
+NH4.consumption.parameters$a_best[ii]=temp[[ii]]$a[which.max(temp[[ii]]$r2)]
+NH4.consumption.parameters$a_max[ii]=max(temp[[ii]]$a)
+NH4.consumption.parameters$a_min[ii]=min(temp[[ii]]$a)
+
+NH4.consumption.parameters$b_best[ii]=temp[[ii]]$b[which.max(temp[[ii]]$r2)]
+NH4.consumption.parameters$b_max[ii]=max(temp[[ii]]$b)
+NH4.consumption.parameters$b_min[ii]=min(temp[[ii]]$b)
+}
+
+# create a vector with all the date differences of the measurments
+temp=split(data1.split.interp.quant.df, f=data1.split.interp.quant.df.year$Depth)
+temp2=datedifference(temp)
+datediff_all=temp2[[1]][[1]]
+
+modelled.data=data1.split.interp.quant.df
+
+for (ii in 1:length(datediff_all)){
+  # define which process is dominating the N cycle
+  for (jj in 1:length(data1.split.interp.quant.df$Depth)){
+    if  (data1.split.interp.quant.df$Depth[[jj]]) 
+  }
+}
+
 
 ```

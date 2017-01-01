@@ -1,8 +1,8 @@
 #' date difference
 #'
-#' this function extracts a segment of a data set according to a selected date range
+#' this function calculates the difference between measurments in days for caculation of time-dependent processes
 #'
-#' @param     input    (-) input data as list of data frame splitted into data frames by years
+#' @param     input    (-) input data as list of data splitted into data frames by years
 #'
 #'
 #' @author Yoav BD

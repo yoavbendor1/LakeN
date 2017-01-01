@@ -38,7 +38,6 @@ yearsegmenter <-
 
       result[[years[jj,]]]=as.data.frame(input[row_sub,])
     }
-      #result[,first.data.col]=input[,first.data.col]*temp.index
       return(result)
     }
 

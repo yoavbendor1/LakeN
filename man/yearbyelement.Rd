@@ -10,7 +10,7 @@ yearbyelement(input)
 \item{input}{(-) input data as list with element name to be used}
 }
 \value{
-only the data that falls into the required date range
+the input data as a list with the year value of each row according to the element
 }
 \description{
 this function assigns the year value by the element name

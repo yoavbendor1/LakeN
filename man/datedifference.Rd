@@ -7,13 +7,13 @@
 datedifference(input)
 }
 \arguments{
-\item{input}{(-) input data as list of data frame splitted into data frames by years}
+\item{input}{(-) input data as list of data splitted into data frames by years}
 }
 \value{
 Date_diff a list of vactros including the difference between dates and the sequence of accumulated time between dates
 }
 \description{
-this function extracts a segment of a data set according to a selected date range
+this function calculates the difference between measurments in days for caculation of time-dependent processes
 }
 \author{
 Yoav BD

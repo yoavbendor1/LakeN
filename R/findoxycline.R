@@ -1,17 +1,19 @@
 #' find oxycline
 #'
-#' this function deterimnes the best estimation for the depth of the oxycline
+#' this function deterimnes the best estimation for the depth of the oxycline the calculation determines the oxycline location by looking for the max gradient if the upper portion of the lake (depths 1 to depth.interval) is not significantly different than the lower portion of the lake (depths max.depth to max.depth-depth. interval), than a max.depth value is asigned for the oxycline
 #'
 #' @param     input    (-) input data as list which has a column with name Oxygen and a column named Depth
 #' @param     oxygen.data.col    (-) input data as list which has a column with name Oxygen and a column named Depth
+#' @param     depth.interval    (m) the depth to be used for comparing the upper portion and the lower portion of the lake
 #' @param     p.value    (-) detremine wether a significant difference between the upper layer and deepest part of the lake exists
 #' @param     max.depth    (m) max depth value to assign when derivative is smaller than thershold
 #' @param     smooth.param    (-) smoothing parameter for oxycline depth. finite double between 0 and 1. default=0.1
-#' @param     threshold.depth    (m)
-#' @param     threshold    (concentration)
+#' @param     threshold.depth    (m) the depth at which the threshold should be examined. if the value at the threshold.depth exceeds the threshold value, than a max depth is assigned
+#' @param     threshold    (concentration) the concentration to be used for determining the whether a max.depth should be assigned to the oxycline
+#'
 #'
 #' @author Yoav BD
-#' @return only the data that falls into the required date range
+#' @return the depth of the oxycline in each measurment day
 
 findoxylcline <-
   function(oxygen.data.col=NA,max.depth=NA,p.value=NA,threshold.depth=25,threshold=5,input,depth.interval=10, smooth.param=0.1){

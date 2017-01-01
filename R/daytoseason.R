@@ -1,6 +1,6 @@
 #' day to season
 #'
-#' this function creates a vector indicating the season of each measurement day
+#' this function adds a column indicating the season of each measurement day
 #' the seasons are assigned according to the following principles
 #' dates        season   nominal value
 #' 22/12-21/3 - winter - 1

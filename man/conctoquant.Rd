@@ -17,7 +17,7 @@ conctoquant(hypso.curve = data2, input, first.data.col = 3)
 quantified data for the lake according to the hypsometric curve
 }
 \description{
-this function transforms concentrations into quantities using the hypsometric curve
+this function transforms concentrations measured in a depth profile into quantities using the hypsometric curve
 }
 \author{
 Yoav BD

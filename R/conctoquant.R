@@ -1,6 +1,6 @@
 #' conctoquant
 #'
-#' this function transforms concentrations into quantities using the hypsometric curve
+#' this function transforms concentrations measured in a depth profile into quantities using the hypsometric curve
 #'
 #'
 #' @param     hypso.curve    (m-sqm) [as.double or as.integer] an hypsometric curve containig the area of each depth of the lake

@@ -10,10 +10,10 @@ fitequation(input)
 \item{input}{(-) input data as dataframe}
 }
 \value{
-only the data that falls into the required date range
+the equation of the fit as character
 }
 \description{
-this function retrieves the equation for the a linear model fit
+this function retrieves the equation for a linear model fit
 }
 \author{
 Yoav BD

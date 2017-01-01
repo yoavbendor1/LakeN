@@ -5,8 +5,7 @@
 #' @param     input    (-) input data as dataframe
 #'
 #' @author Yoav BD
-#' @return only the data that falls into the required date range
-
+#' @return the input data with an additional date formatted column indicating the year of the measurement
 yearassigner <-
   function(input){
 

@@ -1,9 +1,9 @@
 #' date segmenter
 #'
 #' this function extracts a segment of a data set according to a selected date range
-#' if the time span ranges acrros Jan 1st, be sure to change the year in the ma.date value
+#' if the time span ranges acrros Jan 1st, be sure to change the year in the max.date value
 #'
-#' @param     max.date    (-) the maximum range date to be extracted
+#' @param     max.date    (-) the maximum range date to be extracted (if across Jan 1st, change year to year+1)
 #' @param     min.date    (-) the minimum range date to be extracted
 #' @param     first.data.col    (-) the first column of data for interpolation
 #' @param     input    (-) input data as dataframe

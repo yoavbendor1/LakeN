@@ -8,7 +8,7 @@
 #' @param     input    (-) input data as dataframe
 #'
 #' @author Yoav BD
-#' @return interpolated data for the lake according to the provided maximum depth
+#' @return the data with a replacement of column of the realative depth with the real depths of each measurment
 
 realdepth <-
   function(depth.date=data3,measurment.date,input){

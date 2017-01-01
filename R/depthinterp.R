@@ -1,7 +1,7 @@
 #' interpolate data by depth
 #'
 #' this function intepolates a list comprising the N measurments of a lake
-#' package zoo is required to complete NA values in the matrix
+#' package zoo is required to fill NA values in the matrix
 #'
 #'
 #' @param     maxdepth    (m) max depth to be interpolated for the lake

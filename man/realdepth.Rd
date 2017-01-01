@@ -14,7 +14,7 @@ realdepth(depth.date = data3, measurment.date, input)
 \item{input}{(-) input data as dataframe}
 }
 \value{
-interpolated data for the lake according to the provided maximum depth
+the data with a replacement of column of the realative depth with the real depths of each measurment
 }
 \description{
 this function assigns the real depth of every measurment according to the measurment date

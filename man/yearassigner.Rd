@@ -10,7 +10,7 @@ yearassigner(input)
 \item{input}{(-) input data as dataframe}
 }
 \value{
-only the data that falls into the required date range
+the input data with an additional date formatted column indicating the year of the measurement
 }
 \description{
 this function assigns the year of wach mesurment into a new column

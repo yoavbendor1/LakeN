@@ -1,11 +1,11 @@
 #' fit equation
 #'
-#' this function retrieves the equation for the a linear model fit
+#' this function retrieves the equation for a linear model fit
 #'
 #' @param     input    (-) input data as dataframe
 #'
 #' @author Yoav BD
-#' @return only the data that falls into the required date range
+#' @return the equation of the fit as character
 
 fitequation <-
   function(input){

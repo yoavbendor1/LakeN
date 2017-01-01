@@ -5,13 +5,12 @@
 #' @param     input    (-) input data as list with element name to be used
 #'
 #' @author Yoav BD
-#' @return only the data that falls into the required date range
+#' @return the input data as a list with the year value of each row according to the element
 
 yearbyelement <-
   function(input){
     result=input
     # initialize the result vector
-
 
     years=names(input)
 
@@ -23,7 +22,6 @@ yearbyelement <-
       result[[years[jj]]]$Year=Year
     }
 
-    #result[,first.data.col]=input[,first.data.col]*temp.index
     return(result)
   }
 

@@ -25,7 +25,7 @@ interpolated data for the lake according to the provided maximum depth
 }
 \description{
 this function intepolates a list comprising the N measurments of a lake
-package zoo is required to complete NA values in the matrix
+package zoo is required to fill NA values in the matrix
 }
 \author{
 Yoav BD
