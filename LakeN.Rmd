@@ -1459,14 +1459,16 @@ temp=split(data1.split.interp.quant.df, f=data1.split.interp.quant.df.year$Depth
 temp2=datedifference(temp)
 datediff_all=temp2[[1]][[1]]
 
+modelled.data=data.frame(data=NA)
+
+colnames(modelled.data)=colnames(data1.split.interp.quant.df)
 modelled.data=data1.split.interp.quant.df
 
-for (ii in 1:length(datediff_all)){
-  # define which process is dominating the N cycle
-  for (jj in 1:length(data1.split.interp.quant.df$Depth)){
-    if  (data1.split.interp.quant.df$Depth[[jj]]) 
-  }
-}
+
+#  for (jj in 1:length(data1.split.interp.quant.df$Date)){
+#    if  (data1.split.interp.quant.df$Depth[[jj]] < oxycline.depth[[2]]) 
+#  }
+
 
 
 ```
