@@ -20,12 +20,15 @@ source('conctoquant.R')
 source('daytoseason.R')
 source('datesegmenter.R')
 source('datedifference.R')
+source('datedifferencedf.R')
 source('yearsegmenter.R')
 source('yearassigner.R')
 source('fitequation.R')
 source('datesplitter.R')
 source('yearbyelement.R')
 source('findoxycline.R')
+source('NSE.R')
+
 
 
 # at home
@@ -413,6 +416,10 @@ dim(y)=c(40,length(y)/40)
 
 # calculate the oxycline depth
 oxycline.depth=findoxylcline(input=data1.split, max.depth=40,oxygen.data.col=9, p.value=0.05, threshold = 5,threshold.depth = 30, depth.interval=15,smooth.param=0.04)
+
+oxycline.depth.date=data.frame(as.Date(unique(data1.split.interp.quant.df$Date)), oxycline.depth[[1]], oxycline.depth[[2]])
+
+colnames(oxycline.depth.date)=c("Date", "oxycline_int", "oxycline_double")
 
 # plot Oxygen concentration values
 z=oxygen.concentration.interp
@@ -1402,73 +1409,192 @@ d
 
 Use the estimated parameters to model the lake N cycle
 
-```{r best fit estimation, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
+```{r collect all parameters, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 
 template=data.frame(cbind(Depth=seq(from=1, to=40, by=1), a_best=rep(NA, 40), a_min=rep(NA, 40), a_max=rep(NA, 40), b_best=rep(NA, 40), b_min=rep(NA, 40), b_max=rep(NA, 40)))
 
-nitrate.buildup.parameters=template
-NH4.buildup.parameters=template
-nitrate.consumption.parameters=template
-NH4.consumption.parameters=template
+parameters.nitrate.buildup=template
+parameters.NH4.buildup=template
+parameters.nitrate.consumption=template
+parameters.NH4.consumption=template
 
 temp=vector("list", length=0)
 temp=split(Nitrate.model.df,f=Nitrate.model.df$Depth)
 
 for (ii in 1:length(temp)){
-nitrate.buildup.parameters$a_best[ii]=temp[[ii]]$a[which.max(temp[[ii]]$r2)]
-nitrate.buildup.parameters$a_max[ii]=max(temp[[ii]]$a)
-nitrate.buildup.parameters$a_min[ii]=min(temp[[ii]]$a)
-
-nitrate.buildup.parameters$b_best[ii]=temp[[ii]]$b[which.max(temp[[ii]]$r2)]
-nitrate.buildup.parameters$b_max[ii]=max(temp[[ii]]$b)
-nitrate.buildup.parameters$b_min[ii]=min(temp[[ii]]$b)
+  parameters.nitrate.buildup$a_best[ii]=temp[[ii]]$a[which.max(temp[[ii]]$r2)]
+  parameters.nitrate.buildup$a_max[ii]=max(temp[[ii]]$a)
+  parameters.nitrate.buildup$a_min[ii]=min(temp[[ii]]$a)
+  
+  parameters.nitrate.buildup$b_best[ii]=temp[[ii]]$b[which.max(temp[[ii]]$r2)]
+  parameters.nitrate.buildup$b_max[ii]=max(temp[[ii]]$b)
+  parameters.nitrate.buildup$b_min[ii]=min(temp[[ii]]$b)
 }
 
 for (ii in 1:length(temp)){
-NH4.buildup.parameters$a_best[ii]=temp[[ii]]$a[which.max(temp[[ii]]$r2)]
-NH4.buildup.parameters$a_max[ii]=max(temp[[ii]]$a)
-NH4.buildup.parameters$a_min[ii]=min(temp[[ii]]$a)
-
-NH4.buildup.parameters$b_best[ii]=temp[[ii]]$b[which.max(temp[[ii]]$r2)]
-NH4.buildup.parameters$b_max[ii]=max(temp[[ii]]$b)
-NH4.buildup.parameters$b_min[ii]=min(temp[[ii]]$b)
+  parameters.NH4.buildup$a_best[ii]=temp[[ii]]$a[which.max(temp[[ii]]$r2)]
+  parameters.NH4.buildup$a_max[ii]=max(temp[[ii]]$a)
+  parameters.NH4.buildup$a_min[ii]=min(temp[[ii]]$a)
+  
+  parameters.NH4.buildup$b_best[ii]=temp[[ii]]$b[which.max(temp[[ii]]$r2)]
+  parameters.NH4.buildup$b_max[ii]=max(temp[[ii]]$b)
+  parameters.NH4.buildup$b_min[ii]=min(temp[[ii]]$b)
 }
 
 for (ii in 1:length(temp)){
-nitrate.consumption.parameters$a_best[ii]=temp[[ii]]$a[which.max(temp[[ii]]$r2)]
-nitrate.consumption.parameters$a_max[ii]=max(temp[[ii]]$a)
-nitrate.consumption.parameters$a_min[ii]=min(temp[[ii]]$a)
-
-nitrate.consumption.parameters$b_best[ii]=temp[[ii]]$b[which.max(temp[[ii]]$r2)]
-nitrate.consumption.parameters$b_max[ii]=max(temp[[ii]]$b)
-nitrate.consumption.parameters$b_min[ii]=min(temp[[ii]]$b)
+  parameters.nitrate.consumption$a_best[ii]=temp[[ii]]$a[which.max(temp[[ii]]$r2)]
+  parameters.nitrate.consumption$a_max[ii]=max(temp[[ii]]$a)
+  parameters.nitrate.consumption$a_min[ii]=min(temp[[ii]]$a)
+  
+  parameters.nitrate.consumption$b_best[ii]=temp[[ii]]$b[which.max(temp[[ii]]$r2)]
+  parameters.nitrate.consumption$b_max[ii]=max(temp[[ii]]$b)
+  parameters.nitrate.consumption$b_min[ii]=min(temp[[ii]]$b)
 }
 
 for (ii in 1:length(temp)){
-NH4.consumption.parameters$a_best[ii]=temp[[ii]]$a[which.max(temp[[ii]]$r2)]
-NH4.consumption.parameters$a_max[ii]=max(temp[[ii]]$a)
-NH4.consumption.parameters$a_min[ii]=min(temp[[ii]]$a)
+  parameters.NH4.consumption$a_best[ii]=temp[[ii]]$a[which.max(temp[[ii]]$r2)]
+  parameters.NH4.consumption$a_max[ii]=max(temp[[ii]]$a)
+  parameters.NH4.consumption$a_min[ii]=min(temp[[ii]]$a)
+  
+  parameters.NH4.consumption$b_best[ii]=temp[[ii]]$b[which.max(temp[[ii]]$r2)]
+  parameters.NH4.consumption$b_max[ii]=max(temp[[ii]]$b)
+  parameters.NH4.consumption$b_min[ii]=min(temp[[ii]]$b)
+}
+```
 
-NH4.consumption.parameters$b_best[ii]=temp[[ii]]$b[which.max(temp[[ii]]$r2)]
-NH4.consumption.parameters$b_max[ii]=max(temp[[ii]]$b)
-NH4.consumption.parameters$b_min[ii]=min(temp[[ii]]$b)
+```{r intialize modelling, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
+
+#extract only relevant data for the model
+data.for.model=data1.split.interp.quant.df[,c("Date", "Depth", "NH4", "Nitrate")]
+
+#initialize data frame for model
+model.data=data.frame(matrix(data=NA, ncol=ncol(data.for.model), nrow=nrow((data.for.model))))
+colnames(model.data)=colnames(data.for.model)
+model.data$Date=data.for.model$Date
+model.data$Depth=data.for.model$Depth
+
+rownames(data.for.model)=seq(from=1, to=nrow(data.for.model), by=1)
+rownames(model.data)=seq(from=1, to=nrow(model.data), by=1)
+
+#initialize constants and first data points
+max.depth=40
+model.data[1:40,]=data.for.model[1:40,]
+
+# create date-difference vector in days for modelling  
+tmp1=data.frame(Date=rep(NA, length(unique(data1$Date))))
+tmp1$Date=as.Date(unique(data1$Date))
+tmp1=yearassigner(tmp1)
+
+date.dif.for.model=datedifferencedf(tmp1)
+date.dif.for.model.seq = unlist(date.dif.for.model[[1]])
+
+
+# initilize variables for calibration
+# dur variables are the duration of each process
+dur1=30 #duration of NH4 buildup
+dur2=30 #duration of NH4 consumption
+dur3=30 #duration of Nitrate buildup
+dur4=30 #duration of Nitrate consumption
+
+# crit.depth defines when the lake is considered fully mixed
+crit.depth=35
+
+# intialize random noise for vaiables
+mean.rand.NH4=1e6
+sd.rand.NH4=mean.rand.NH4/2
+
+start.row=as.integer(max.depth+1)
+end.row=as.integer(2*max.depth)
+
+for (ii in 2:length(unique(data1.split.interp.quant.df$Date))){
+  # remove previous remains from loop 
+  rm(tmp.NH4, tmp.nitrate)
+  # extract the data for the specific date
+  
+  tmp.data=model.data[(start.row-max.depth):(end.row-max.depth),]
+  # initialize empty variables for loop
+  tmp.NH4=data.frame(NH4=rep(0,max.depth))
+  tmp.nitrate=data.frame(nitrate=rep(0,max.depth))
+  
+  # find out if the lake is fully mixed or stratified to determine dominant processe
+  if (oxycline.depth.date$oxycline_int[ii]<crit.depth){
+    # the lake is stratified
+    #epilimnion depths
+    epi=seq(from=1, to=oxycline.depth.date$oxycline_int[ii], by=1) 
+    #Hypolimnion depths
+    hypo=seq(to=max.depth, from=oxycline.depth.date$oxycline_int[ii]+1, by=1)  
+    
+    # calculations for epilimnion
+    for (jj in 1:max(epi)){
+      NH4.noise=rnorm(1, mean=mean.rand.NH4, sd=sd.rand.NH4) # noise for data
+      plus.minus=sign(rnorm(1, mean=0, sd=1)) #randomly select if noise is added or removed
+      if (plus.minus==0) plus.minus=1 # eliminate zero for noise sign
+      
+      tmp.NH4[jj,1]=tmp.data$NH4[jj]+plus.minus*NH4.noise
+      if (tmp.NH4[jj,1]<0) tmp.NH4[jj,1]=0 # if the value is smaller than zero, place zero
+    }
+    
+    # calculations for hypolimnion
+    for (jj in min(hypo):max(hypo)){
+      NH4.noise=rnorm(1, mean=mean.rand.NH4, sd=sd.rand.NH4) # noise for data
+      plus.minus=sign(rnorm(1, mean=0, sd=1)) #randomly select if noise is added or removed
+      if (plus.minus==0) plus.minus=1 # eliminate zero for noise sign
+      
+      tmp.NH4$NH4[jj]=tmp.data$NH4[jj]+parameters.NH4.buildup$a_best[jj]*date.dif.for.model.seq[ii-1]+plus.minus*NH4.noise
+      
+      if (tmp.NH4[jj,1]<0) tmp.NH4[jj,1]=0
+    }
+  }
+  
+model.data$NH4[start.row:end.row]=tmp.NH4$NH4
+  
+  start.row=as.integer(end.row+1)
+  end.row=as.integer(start.row+max.depth-1)
+  
+  
 }
 
-# create a vector with all the date differences of the measurments
-#temp=split(data1.split.interp.quant.df, f=data1.split.interp.quant.df$Depth)
-#temp2=datedifference(temp)
-#datediff_all=temp2[[1]][[1]]
+```
 
-#modelled.data=data.frame(data=NA)
+```{r temp,eval=FALSE, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 
-#colnames(modelled.data)=colnames(data1.split.interp.quant.df)
-#modelled.data=data1.split.interp.quant.df
+#this is the mixing code (needs to be time-limited)
 
-
-#  for (jj in 1:length(data1.split.interp.quant.df$Date)){
-#    if  (data1.split.interp.quant.df$Depth[[jj]] < oxycline.depth[[2]]) 
+#  if (oxycline.depth.date$oxycline_int[ii]>crit.depth){
+    # the lake is mixed
+#    sum.NH4=sum(tmp.data$NH4)
+    # redistribute NH4 following a quatratic distribution from 1 at depth 0 to 0 at max.depth
+#    nPartition = max.depth;
+#    r = (max.depth^2*(seq(from=1, to=max.depth, by=1)-max.depth)^2)
+ #   r=r/sum(r)
+    
+  #  d = abs(r-0.5);
+#    idx = which.min(d);
+#    tmp.NH4$NH4 = round(sum.NH4*r);
+ #   tmp.NH4$NH4[idx] = tmp.NH4$NH4[idx]+(sum.NH4-sum(tmp.NH4$NH4))
+    
 #  }
+  
 
 
+
+
+```
+
+```{r visualize model results, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
+#initilize NH4 plot
+
+x.depth=seq(from=5, to=40, by=5)
+
+depth.indices=which(match(model.data$Depth,x.depth[1])==1)
+pnh4=ggplot(data=model.data[depth.indices,], aes(x=Date, y=NH4, colour=Depth))+geom_line()
+pnh4=pnh4+labs(title="modelled NH4" ,x = "Month", y = "modelled NH4[quant]")
+pnh4=pnh4+scale_x_date(date_labels="%m-%Y", date_breaks="6 months")
+pnh4=pnh4+scale_colour_gradient2(low = "red", mid = "green" , high = "blue", midpoint = 20)
+for (ii in 2:length(x.depth)){
+  depth.indices=which(match(model.data$Depth,x.depth[ii])==1)
+  pnh4=pnh4+geom_line(data=model.data[depth.indices,], aes(x=Date, y=NH4, colour=Depth))
+}
+pnh4
 
 ```
