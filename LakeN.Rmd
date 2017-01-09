@@ -27,6 +27,7 @@ source('fitequation.R')
 source('datesplitter.R')
 source('yearbyelement.R')
 source('findoxycline.R')
+source('lakemixer.R')
 source('NSE.R')
 
 
@@ -1431,6 +1432,9 @@ for (ii in 1:length(temp)){
   parameters.nitrate.buildup$b_min[ii]=min(temp[[ii]]$b)
 }
 
+temp=vector("list", length=0)
+temp=split(NH4.model.df,f=NH4.model.df$Depth)
+
 for (ii in 1:length(temp)){
   parameters.NH4.buildup$a_best[ii]=temp[[ii]]$a[which.max(temp[[ii]]$r2)]
   parameters.NH4.buildup$a_max[ii]=max(temp[[ii]]$a)
@@ -1441,6 +1445,9 @@ for (ii in 1:length(temp)){
   parameters.NH4.buildup$b_min[ii]=min(temp[[ii]]$b)
 }
 
+temp=vector("list", length=0)
+temp=split(nitrate.model.b.df,f=nitrate.model.b.df$Depth)
+
 for (ii in 1:length(temp)){
   parameters.nitrate.consumption$a_best[ii]=temp[[ii]]$a[which.max(temp[[ii]]$r2)]
   parameters.nitrate.consumption$a_max[ii]=max(temp[[ii]]$a)
@@ -1450,6 +1457,10 @@ for (ii in 1:length(temp)){
   parameters.nitrate.consumption$b_max[ii]=max(temp[[ii]]$b)
   parameters.nitrate.consumption$b_min[ii]=min(temp[[ii]]$b)
 }
+
+temp=vector("list", length=0)
+temp=split(NH4.model.b.df,f=NH4.model.b.df$Depth)
+
 
 for (ii in 1:length(temp)){
   parameters.NH4.consumption$a_best[ii]=temp[[ii]]$a[which.max(temp[[ii]]$r2)]
@@ -1462,7 +1473,13 @@ for (ii in 1:length(temp)){
 }
 ```
 
-```{r intialize modelling, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
+```{r define modelling parameters, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
+
+# find mode function
+getmode <- function(v) {
+  uniqv <- unique(v)
+  uniqv[which.max(tabulate(match(v, uniqv)))]
+}
 
 #extract only relevant data for the model
 data.for.model=data1.split.interp.quant.df[,c("Date", "Depth", "NH4", "Nitrate")]
@@ -1472,7 +1489,6 @@ model.data=data.frame(matrix(data=NA, ncol=ncol(data.for.model), nrow=nrow((data
 colnames(model.data)=colnames(data.for.model)
 model.data$Date=data.for.model$Date
 model.data$Depth=data.for.model$Depth
-
 rownames(data.for.model)=seq(from=1, to=nrow(data.for.model), by=1)
 rownames(model.data)=seq(from=1, to=nrow(model.data), by=1)
 
@@ -1487,101 +1503,109 @@ tmp1=yearassigner(tmp1)
 
 date.dif.for.model=datedifferencedf(tmp1)
 date.dif.for.model.seq = unlist(date.dif.for.model[[1]])
+data.dates=as.Date(unique(data.for.model$Date))
 
+# collect data on mixing-stratification conditions
+indicator=data.frame(indicator=rep(0,length(data.dates)))
+row.names(indicator)=data.dates
+# define how much of the mixed element remains
+mixing.ratio.NH4=1
+mixing.ratio.nitrate=1
 
-# initilize variables for calibration
-# dur variables are the duration of each process
-dur1=30 #duration of NH4 buildup
-dur2=30 #duration of NH4 consumption
-dur3=30 #duration of Nitrate buildup
-dur4=30 #duration of Nitrate consumption
+# crit.depth defines when the lake is considered fully mixed according to oxycline depth
+crit.depth=30
 
-# crit.depth defines when the lake is considered fully mixed
-crit.depth=35
+# intialize random noise for variables
+mean.rand.NH4=3e5
+sd.rand.NH4=mean.rand.NH4/10
 
-# intialize random noise for vaiables
-mean.rand.NH4=1e6
-sd.rand.NH4=mean.rand.NH4/2
+# the delay between occurrences of lake mixing
+# how frequent can the lake be mixed (in days)
+mix.delay=15
+mix.delay.ind=0
+mix.index=data.dates[1]
+first.mix=data.dates[1]
+first.mix.delay.ind=100
 
 start.row=as.integer(max.depth+1)
 end.row=as.integer(2*max.depth)
 
-for (ii in 2:length(unique(data1.split.interp.quant.df$Date))){
-  # remove previous remains from loop 
-  rm(tmp.NH4, tmp.nitrate)
-  # extract the data for the specific date
+num.strat=0
+num.mix=0
+num.none=0
+ii.mix=0
+
+dur2=20
+dur3=60
+
+#start a loop for the modelling
+for (ii in 2:length(data.dates)){
+  if.index=0
+  rm(tmp.NH4, tmp.nitrate, tmp.data)
+  # extract the data for the previous date
+  tmp.data=data.frame(model.data[((ii-2)*max.depth+1):(((ii-2)*max.depth)+max.depth),])
   
-  tmp.data=model.data[(start.row-max.depth):(end.row-max.depth),]
   # initialize empty variables for loop
   tmp.NH4=data.frame(NH4=rep(0,max.depth))
   tmp.nitrate=data.frame(nitrate=rep(0,max.depth))
   
-  # find out if the lake is fully mixed or stratified to determine dominant processe
-  if (oxycline.depth.date$oxycline_int[ii]<crit.depth){
+  # create noise for calculations
+  NH4.noise=data.frame(NH4.noise=sign(rnorm(max.depth, mean=0, sd=1))*rnorm(max.depth, mean=mean.rand.NH4, sd=sd.rand.NH4))
+  
+  # if the mixing depth has reached the critical depth than the lake is mixed
+  # the lake cannot be mixed twice within a time span smaller than mix.delay
+  if (mix.index!=data.dates[ii]){
+    mix.delay.ind=as.integer(abs(as.Date(mix.index)-as.Date(data.dates[ii])))}
+  
+  if (first.mix!=data.dates[ii]){
+    first.mix.delay.ind=as.integer(abs(as.Date(first.mix)-as.Date(data.dates[ii])))}
+  
+  if (oxycline.depth.date$oxycline_int[ii]<crit.depth & if.index!=1){
     # the lake is stratified
-    #epilimnion depths
-    epi=seq(from=1, to=oxycline.depth.date$oxycline_int[ii], by=1) 
-    #Hypolimnion depths
-    hypo=seq(to=max.depth, from=oxycline.depth.date$oxycline_int[ii]+1, by=1)  
+    num.strat=num.strat+1
+    indicator[ii,]=1
+    if.index=1
     
-    # calculations for epilimnion
-    for (jj in 1:max(epi)){
-      NH4.noise=rnorm(1, mean=mean.rand.NH4, sd=sd.rand.NH4) # noise for data
-      plus.minus=sign(rnorm(1, mean=0, sd=1)) #randomly select if noise is added or removed
-      if (plus.minus==0) plus.minus=1 # eliminate zero for noise sign
-      
-      tmp.NH4[jj,1]=tmp.data$NH4[jj]+plus.minus*NH4.noise
-      if (tmp.NH4[jj,1]<0) tmp.NH4[jj,1]=0 # if the value is smaller than zero, place zero
-    }
-    
-    # calculations for hypolimnion
-    for (jj in min(hypo):max(hypo)){
-      NH4.noise=rnorm(1, mean=mean.rand.NH4, sd=sd.rand.NH4) # noise for data
-      plus.minus=sign(rnorm(1, mean=0, sd=1)) #randomly select if noise is added or removed
-      if (plus.minus==0) plus.minus=1 # eliminate zero for noise sign
-      
-      tmp.NH4$NH4[jj]=tmp.data$NH4[jj]+parameters.NH4.buildup$a_best[jj]*date.dif.for.model.seq[ii-1]+plus.minus*NH4.noise
-      
-      if (tmp.NH4[jj,1]<0) tmp.NH4[jj,1]=0
-    }
+    #   if (first.mix.delay.ind<dur2){
+    # NH4 buildup (only in hypolimnion)
+    epi.depth=oxycline.depth.date$oxycline_int[ii]
+    tmp.NH4$NH4[1:epi.depth]=tmp.data$NH4[1:epi.depth]
+    tmp.NH4$NH4[(epi.depth+1):max.depth]=tmp.data$NH4[(epi.depth+1):max.depth]+parameters.NH4.buildup$a_best[(epi.depth+1):max.depth]*(date.dif.for.model.seq[ii-1])
+    #    }
+    #        if (first.mix.delay.ind>dur2){
+    # NH4 consumption
+    #      tmp.NH4$NH4[1:max.depth]=tmp.data$NH4[1:max.depth]+parameters.NH4.consumption$a_best[1:max.depth]*(date.dif.for.model.seq[ii-1])
+    #        }
   }
   
-model.data$NH4[start.row:end.row]=tmp.NH4$NH4
+  
+  if (oxycline.depth.date$oxycline_int[ii] > crit.depth & if.index!=1){
+    indicator[ii,]=2
+    # during first mix of the season the amount is reduced by mixing.ratio
+    tmp.NH4$NH4=mixing.ratio.NH4*lakemixer(input=tmp.data$NH4)
+    mix.index=as.Date(data.dates[ii])
+    if (mean(indicator$indicator[(ii-4):(ii-1)])==1) first.mix=data.dates[ii]
+    if.index=1
+    num.mix=num.mix+1
+  }
+  
+  # if the lake was recently mixed but stratification is not yet fully developed
+  if (if.index!=1){
+    indicator[ii,]=3
+    num.none=num.none+1
+  }
+  
+  
+  tmp.NH4$NH4=tmp.NH4+NH4.noise
+  # break when all data is exhausted
+  if (start.row>nrow(data.for.model)) break
+  tmp.NH4$NH4[tmp.NH4$NH4<0]=0
+  model.data$NH4[start.row:end.row]=unlist(tmp.NH4)
   
   start.row=as.integer(end.row+1)
   end.row=as.integer(start.row+max.depth-1)
-  
-  
 }
 
-```
-
-```{r temp,eval=FALSE, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
-
-#this is the mixing code (needs to be time-limited)
-
-#  if (oxycline.depth.date$oxycline_int[ii]>crit.depth){
-    # the lake is mixed
-#    sum.NH4=sum(tmp.data$NH4)
-    # redistribute NH4 following a quatratic distribution from 1 at depth 0 to 0 at max.depth
-#    nPartition = max.depth;
-#    r = (max.depth^2*(seq(from=1, to=max.depth, by=1)-max.depth)^2)
- #   r=r/sum(r)
-    
-  #  d = abs(r-0.5);
-#    idx = which.min(d);
-#    tmp.NH4$NH4 = round(sum.NH4*r);
- #   tmp.NH4$NH4[idx] = tmp.NH4$NH4[idx]+(sum.NH4-sum(tmp.NH4$NH4))
-    
-#  }
-  
-
-
-
-
-```
-
-```{r visualize model results, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 #initilize NH4 plot
 
 x.depth=seq(from=5, to=40, by=5)
