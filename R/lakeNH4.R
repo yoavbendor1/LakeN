@@ -1,7 +1,7 @@
 #' lakeNH4
 #'
 #' This model carries the calculations of the NH4 cycle in the lake for a series of time-series data
-#' @param model.data a data frame that has the first time step and is ready to incorporate all the results of the calculations. row number should equal the length of time series times the depths interpolated. the data.frame should include columns named Date, Depth, and NH4
+#' @param input a data frame that has the first time step and is ready to incorporate all the results of the calculations. row number should equal the length of time series times the depths interpolated. the data.frame should include columns named Date, Depth, and NH4
 #' @param max.depth (m) maximum depth to be interpolated
 #' @param mean.rand.NH4 (max.depth) the mean value for the noise factor of the process
 #' @param sd.rand.NH4 (concentration) the sd value for the noise factor of the process
@@ -23,9 +23,9 @@
 #' @author Y. Ben Dor
 #' @return only the data that falls into the required date range
 
-lakeNH4 = function (model.data,mean.rand.NH4=3e5, sd.rand.NH4=3e5/10, data.dates=as.Date(unique(mode.data$Date)), mix.index=as.Date(data.dates[1]),
+lakeNH4 = function (input,mean.rand.NH4=3e5, sd.rand.NH4=3e5/10, data.dates=as.Date(unique(mode.data$Date)), mix.index=as.Date(data.dates[1]),
                     mix.delay.ind=0, first.mix=as.Date(as.Date(data.dates[length(data.dates)/2])), parameters.NH4.consumption, NH4.comsumption.correction.factor=1, date.dif.for.model.seq,
-                    oxycline.depth.date,crit.depth=35, mixing.ratio.NH4=0.95,parameters.NH4.buildup, dur2=30, dur3=120, first.mix.delay.ind=1.5*dur3, max.depth)
+                    oxycline.depth.date,crit.depth=35, mixing.ratio.NH4=0.95,parameters.NH4.buildup, dur2=30, dur3=120, first.mix.delay.ind=1.5*dur3, max.depth=40)
 {
 
   # collect data on mixing-stratification conditions
@@ -51,7 +51,7 @@ lakeNH4 = function (model.data,mean.rand.NH4=3e5, sd.rand.NH4=3e5/10, data.dates
     if.index=0
     rm(tmp.NH4, tmp.nitrate, tmp.data)
     # extract the data for the previous date
-    tmp.data=data.frame(model.data[((ii-2)*max.depth+1):(((ii-2)*max.depth)+max.depth),])
+    tmp.data=data.frame(input[((ii-2)*max.depth+1):(((ii-2)*max.depth)+max.depth),])
 
     # initialize empty variables for loop
     tmp.NH4=data.frame(NH4=rep(0,max.depth))
@@ -110,10 +110,10 @@ lakeNH4 = function (model.data,mean.rand.NH4=3e5, sd.rand.NH4=3e5/10, data.dates
     # break when all data is exhausted
     if (start.row>nrow(data.for.model)) break
     tmp.NH4$NH4[tmp.NH4$NH4<0]=0
-    model.data$NH4[start.row:end.row]=unlist(tmp.NH4)
+    input$NH4[start.row:end.row]=unlist(tmp.NH4)
 
     start.row=as.integer(end.row+1)
     end.row=as.integer(start.row+max.depth-1)
   }
-  return(model.data)
+  return(input)
 }

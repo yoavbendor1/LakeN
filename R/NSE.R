@@ -16,5 +16,5 @@ NSE = function (m, o)
   nse = 1.0 - mse/ovar
   nse
 
-  return (nse)
+  return (as.double(nse))
 }

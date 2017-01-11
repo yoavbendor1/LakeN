@@ -1516,10 +1516,19 @@ data.dates=as.Date(unique(data.for.model$Date))
 parameters.NH4.consumption.2=parameters.NH4.consumption$a_best
 parameters.NH4.buildup.2=parameters.NH4.buildup$a_best
 
-model.data.2=lakeNH4(max.depth=40, model.data=model.data,mean.rand.NH4=3e5, sd.rand.NH4=3e5/5, mix.index=as.Date("2010-06-06"), data.dates=as.Date(unique(data.for.model$Date)), mix.delay.ind=0, first.mix=as.Date("2011-06-05"), NH4.comsumption.correction.factor=3, parameters.NH4.consumption=parameters.NH4.consumption.2, date.dif.for.model.seq=date.dif.for.model.seq, oxycline.depth.date=oxycline.depth.date,mixing.ratio.NH4=0.9,crit.depth=35, parameters.NH4.buildup=parameters.NH4.buildup.2, dur2=30, dur3=120, first.mix.delay.ind=1.5*dur3)
+model.data.2=lakeNH4(input=model.data,max.depth=40, mean.rand.NH4=3e5, sd.rand.NH4=3e5/5, mix.index=as.Date("2010-06-06"), data.dates=as.Date(unique(data.for.model$Date)), mix.delay.ind=0, first.mix=as.Date("2011-06-05"), NH4.comsumption.correction.factor=3, parameters.NH4.consumption=parameters.NH4.consumption.2, date.dif.for.model.seq=date.dif.for.model.seq, oxycline.depth.date=oxycline.depth.date,mixing.ratio.NH4=0.9,crit.depth=35, parameters.NH4.buildup=parameters.NH4.buildup.2, dur2=30, dur3=120, first.mix.delay.ind=1.5*dur3)
 
-#test=sapply(model.data, lakeNH4(model.data=model.data,mean.rand.NH4=3e5, sd.rand.NH4=3e5/10, mix.index=as.Date("2010-06-06"), data.dates=as.Date(unique(data.for.model$Date)), mix.delay.ind=0, first.mix=as.Date("2011-06-05"), NH4.comsumption.correction.factor=1, parameters.NH4.consumption=parameters.NH4.consumption.2, date.dif.for.model.seq=date.dif.for.model.seq, oxycline.depth.date=oxycline.depth.date,crit.depth=35, parameters.NH4.buildup=parameters.NH4.buildup.2, dur2=30, dur3=120, first.mix.delay.ind=1.5*dur3))
+X=model.data[c('Depth','NH4')]
+test=apply(X, MARGIN=1, FUN='lakeNH4',max.depth=40,input=X,mean.rand.NH4=seq(from=3e5, to=3e7, by=1000), sd.rand.NH4=seq(from=3e4, to=3e6, by=1000), mix.index=as.Date("2010-06-06"), data.dates=as.Date(unique(data.for.model$Date)), mix.delay.ind=0, first.mix=as.Date("2011-06-05"), NH4.comsumption.correction.factor=seq(from=0.5, to=10, by=0.5), parameters.NH4.consumption=parameters.NH4.consumption.2, date.dif.for.model.seq=date.dif.for.model.seq, oxycline.depth.date=oxycline.depth.date,crit.depth=seq(from=20, to=40, by=1), parameters.NH4.buildup=parameters.NH4.buildup.2, dur2=seq(from=20 ,to=60, by=5), dur3=seq(from=60 ,to=150, by=5), first.mix.delay.ind=1.5*dur3)
 
+NSE.mat=as.data.frame(rep(0, length(test)))
+for (ii in 1:length(test)){
+  tmp=test[[ii]]$NH4
+  tmp[is.na(tmp)]=0
+NSE.mat[ii,1]=NSE(m=tmp,o=data.for.model$NH4)
+}
+
+length(which(NSE.mat>0))
 #NH4 plot
 x.depth=seq(from=5, to=40, by=5)
 depth.indices=which(match(model.data.2$Depth,x.depth[1])==1)
