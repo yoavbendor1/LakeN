@@ -10,6 +10,11 @@ output:
 ```{r setup, echo=FALSE ,include=FALSE , root.dir="F:/MyDocuments/GIT/LakeN", out.width = '600px', out.height = '300px'}
 knitr::opts_chunk$set(echo = FALSE , warning=FALSE, message=FALSE)
 
+myfilename=as.character("Tami1")
+
+# adjust available RAM prior to loading Rjava 
+options(java.parameters = "-Xmx8000m")
+
 # at home
 #setwd("F:/MyDocuments/GIT/LakeN/R")
 
@@ -41,6 +46,22 @@ setwd("C:/Users/user/Documents/LakeN")
 
 ```
 
+```{r packages installation, echo=FALSE ,include=FALSE , Eval=FALSE}
+# run this block only once
+
+install.packages("plyr")
+install.packages("zoo")
+install.packages("dplyr")
+install.packages("LakeN")
+install.packages("plot3D")
+install.packages("ggplot2")
+install.packages("png")
+install.packages("reshape2")
+install.packages("reshape")
+install.packages("rJava")
+install.packages("xlsx")
+
+```
 
 ```{r data read, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
 # load relevant libraries
@@ -52,6 +73,9 @@ library(plot3D)
 library(ggplot2)
 library(png)
 library(reshape2)
+library(reshape)
+library(rJava)
+library(xlsx)
 
 # read the data for the model
 # use the read.table function in the cas of a tab=delimited text file
@@ -282,6 +306,76 @@ legend(1.05*max(c((data1.split.depth.quant[[rand.num]]$Nitrate),max(data1.split.
 ```
 
 ### save the data into an excel file
-```{r quntification plots, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
+```{r data frame creation, echo=FALSE, warning=FALSE, message=FALSE, out.width = '600px', out.height = '300px'}
+# create a dataframe based on interpolated data in list
+# load the first element of the list
+data1.split.interp.depth.df=as.data.frame(data1.split.interp.depth[[1]])
+oxygen.concentration.interp=as.data.frame(data1.split.interp.depth[[1]]$Oxygen)
+colnames(oxygen.concentration.interp)=c("Oxygen")
 
+# create dataframes of none-quantified data
+# load all other elements in a loop
+for (ii in 2:length(data1.split.interp)){
+  temp=as.data.frame(data1.split.interp.depth[[ii]])
+  data1.split.interp.depth.df=rbind(data1.split.interp.depth.df,temp)
+}
+
+#create a data frame where depth values are 1 to 40
+data1.split.interp.df=data1.split.interp.depth.df
+data1.split.interp.df[["Depth"]]=rep(seq(from=1, to=40, by=1),length(data1.split.interp.df[["Depth"]])/40)
+
+
+# create dataframes of quantified data
+# load the first element of the list
+data1.split.interp.depth.quant.df=as.data.frame(data1.split.interp.depth.quant[[1]])
+oxygen.concentration.interp=as.data.frame(data1.split.interp.depth[[1]]$Oxygen)
+colnames(oxygen.concentration.interp)=c("Oxygen")
+
+# load all other elements in a loop
+for (ii in 2:length(data1.split.interp.depth.quant)){
+  temp=as.data.frame(data1.split.interp.depth.quant[[ii]])
+  temp.ox=as.data.frame(data1.split.interp.depth[[ii]]$Oxygen)
+  colnames(temp.ox)=c("Oxygen")
+  
+  data1.split.interp.depth.quant.df=rbind(data1.split.interp.depth.quant.df,temp)
+  oxygen.concentration.interp=rbind(oxygen.concentration.interp,temp.ox)
+}
+colnames(oxygen.concentration.interp)=c("Oxygen_conc")
+data1.split.interp.depth.quant.df=cbind(data1.split.interp.depth.quant.df,oxygen.concentration.interp)
+
+#create a data frame where depth values are 1 to 40
+data1.split.interp.quant.df=data1.split.interp.depth.quant.df
+data1.split.interp.quant.df[["Depth"]]=rep(seq(from=1, to=40, by=1),length(data1.split.interp.quant.df[["Depth"]])/40)
+
+# calculate matching season for every measurment day
+#day.season=data.frame(matrix(data=NA, ncol=2, nrow=length(data1.split.interp.quant.df)))
+#day.season=daytoseason(input=data1.split.interp.quant.df$Date)
+
+#data1.split.interp.quant.df=cbind(data1.split.interp.quant.df,day.season[,2:3])
+#data1.split.interp.depth.quant.df=cbind(data1.split.interp.depth.quant.df,day.season[,2:3])
+
+
+file=paste(getwd(),"/",myfilename,".xlsx", sep="")
+write.xlsx2(data1.split.interp.df, file, sheetName = "not quantified", row.names = FALSE)
+write.xlsx2(data1.split.interp.depth.df, file, sheetName = "not quantified real depth", row.names = FALSE, append=TRUE)
+write.xlsx2(data1.split.interp.quant.df, file, sheetName = "quantified", row.names = FALSE, append=TRUE)
+write.xlsx2(data1.split.interp.depth.quant.df, file, sheetName = "quantified real depth", row.names = FALSE, append=TRUE)
+
+file=paste(getwd(),"/",myfilename,"timeseries",".xlsx", sep="")
+sheet.names=names(data1.split.interp.df)
+for (ii in 3:9){
+tmp=data1.split.interp.df[,c(1,2,ii)]
+tmp.time.series = cast(tmp, Depth~Date)
+
+# save concentrations data
+sheetName=paste(sheet.names[ii],"timeseries", sep="")
+write.xlsx2(tmp.time.series, file, sheetName = sheetName, row.names = FALSE, append=TRUE)
+
+  tmp2=data1.split.interp.quant.df[,c(1,2,ii)]
+tmp.time.series2 = cast(tmp2, Depth~Date)
+
+# save quantified data
+sheetName=paste(sheet.names[ii],"quant","timeseries", sep="")
+write.xlsx2(tmp.time.series2, file, sheetName = sheetName, row.names = FALSE, append=TRUE)
+}
 ```
